@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #FF2D55;
+  --primary-dark: #CC0033;
+  --secondary: #1A1A2E;
+  --accent: #FF6B6B;
+  --bg: #0F0F1A;
+  --bg-card: #1A1A2E;
+  --bg-card2: #222235;
+  --text: #F0F0F0;
+  --text-muted: #8888AA;
+  --border: #2A2A45;
+  --success: #00C896;
+  --warning: #FFB800;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), #FF6B35);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+.card:hover { border-color: var(--primary); transform: translateY(-2px); }
+
+input, select {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+input:focus, select:focus { border-color: var(--primary); }
+input::placeholder { color: var(--text-muted); }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-red { background: rgba(255,45,85,0.15); color: var(--primary); }
+.badge-green { background: rgba(0,200,150,0.15); color: var(--success); }
+.badge-yellow { background: rgba(255,184,0,0.15); color: var(--warning); }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }

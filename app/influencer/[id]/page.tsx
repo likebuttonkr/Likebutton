@@ -1,0 +1,239 @@
+'use client';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import { getChannelById, getChannelVideos, YoutubeChannel, YoutubeVideo } from '../../lib/youtube';
+import { Star, Users, Play, ExternalLink, Heart, Share2, MessageSquare, CheckCircle, ArrowLeft } from 'lucide-react';
+
+const REVIEWS = [
+  { name: '마케팅팀장 김○○', company: '뷰티코리아', rating: 5, text: '기대 이상의 결과물이었습니다. 영상 퀄리티도 높고 팬들의 반응도 매우 좋았어요. 다음에도 꼭 같이 작업하고 싶습니다.', date: '2024.03.15' },
+  { name: '브랜드매니저 이○○', company: '푸드스타트업', rating: 5, text: '소통이 정말 원활하고 기획안도 꼼꼼하게 작성해주셨어요. 조회수도 예상보다 높게 나왔고 만족합니다.', date: '2024.02.28' },
+  { name: '대표 박○○', company: '패션브랜드X', rating: 4, text: '전문성이 느껴지는 콘텐츠였습니다. 일정이 조금 늦어졌지만 결과물 퀄리티는 훌륭했어요.', date: '2024.01.20' },
+];
+
+const SERVICES = [
+  { type: '브랜디드', desc: '채널 메인 컨텐츠로 제작, 자연스러운 브랜드 노출', price: '500만원~', days: '14일' },
+  { type: 'PPL', desc: '영상 내 자연스러운 제품/서비스 삽입 광고', price: '200만원~', days: '7일' },
+  { type: '맞춤형', desc: '브랜드 요청에 따른 맞춤 제작', price: '협의', days: '협의' },
+];
+
+export default function InfluencerDetail() {
+  const { id } = useParams<{ id: string }>();
+  const [channel, setChannel] = useState<YoutubeChannel | null>(null);
+  const [videos, setVideos] = useState<YoutubeVideo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [liked, setLiked] = useState(false);
+  const [tab, setTab] = useState<'videos' | 'service' | 'reviews'>('videos');
+
+  useEffect(() => {
+    if (!id) return;
+    Promise.all([getChannelById(id), getChannelVideos(id, 6)]).then(([ch, vids]) => {
+      setChannel(ch);
+      setVideos(vids);
+      setLoading(false);
+    });
+  }, [id]);
+
+  if (loading) return (
+    <div>
+      <Header />
+      <div style={{ maxWidth: 1000, margin: '60px auto', padding: '0 24px' }}>
+        <div style={{ height: 200, background: 'var(--bg-card)', borderRadius: 16, marginBottom: 20, border: '1px solid var(--border)' }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24 }}>
+          <div style={{ height: 400, background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)' }} />
+          <div style={{ height: 400, background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)' }} />
+        </div>
+      </div>
+    </div>
+  );
+
+  if (!channel) return (
+    <div><Header />
+      <div style={{ textAlign: 'center', padding: '100px 24px', color: 'var(--text-muted)' }}>
+        <p style={{ fontSize: 18 }}>채널을 찾을 수 없습니다.</p>
+        <Link href="/search" style={{ color: '#FF2D55', textDecoration: 'none' }}>검색으로 돌아가기</Link>
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      <Header />
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
+        {/* Back */}
+        <Link href="/search" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)', textDecoration: 'none', fontSize: 14, marginBottom: 24, fontWeight: 500 }}
+          className="hover:text-white">
+          <ArrowLeft size={16} /> 검색 결과로 돌아가기
+        </Link>
+
+        {/* Profile card */}
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '32px', marginBottom: 24 }}>
+          <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative' }}>
+              <img src={channel.thumbnail} alt={channel.title} style={{ width: 100, height: 100, borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--border)' }} />
+              <div style={{ position: 'absolute', bottom: 4, right: 4, background: '#FF2D55', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'white', fontWeight: 700 }}>
+                YT
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: 24, fontWeight: 900 }}>{channel.title}</h1>
+                <CheckCircle size={20} color="#FF2D55" fill="rgba(255,45,85,0.2)" />
+              </div>
+              <div style={{ display: 'flex', gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
+                {[
+                  { label: '구독자', value: channel.subscriberCount },
+                  { label: '총 조회수', value: channel.viewCount },
+                  { label: '영상 수', value: `${channel.videoCount}개` },
+                ].map(s => (
+                  <div key={s.label}>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block' }}>{s.label}</span>
+                    <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{s.value}</span>
+                  </div>
+                ))}
+              </div>
+              <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, maxWidth: 500 }}>{channel.description?.slice(0, 150) || '채널 설명이 없습니다.'}{channel.description && channel.description.length > 150 ? '...' : ''}</p>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <button onClick={() => setLiked(!liked)} style={{ padding: '10px 16px', background: liked ? 'rgba(255,45,85,0.15)' : 'var(--bg-card2)', border: `1px solid ${liked ? '#FF2D55' : 'var(--border)'}`, color: liked ? '#FF2D55' : 'var(--text-muted)', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500 }}>
+                <Heart size={16} fill={liked ? '#FF2D55' : 'none'} /> {liked ? '관심 등록됨' : '관심 등록'}
+              </button>
+              <button style={{ padding: '10px', background: 'var(--bg-card2)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: 8, cursor: 'pointer' }}>
+                <Share2 size={16} />
+              </button>
+              <a href={`https://youtube.com/channel/${id}`} target="_blank" rel="noreferrer" style={{ padding: '10px 16px', background: 'rgba(255,0,0,0.1)', border: '1px solid rgba(255,0,0,0.2)', color: '#FF4444', borderRadius: 8, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600 }}>
+                <ExternalLink size={14} /> YouTube
+              </a>
+            </div>
+          </div>
+
+          {/* Rating */}
+          <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--border)', display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 2 }}>
+                {[1,2,3,4,5].map(s => <Star key={s} size={18} fill={s <= Math.round(channel.rating as number) ? '#FFB800' : 'none'} color="#FFB800" />)}
+              </div>
+              <span style={{ fontSize: 22, fontWeight: 900 }}>{channel.rating}</span>
+              <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>({channel.reviewCount}개 리뷰)</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {['소통 좋음', '고품질 콘텐츠', '일정 준수'].map(tag => (
+                <span key={tag} style={{ padding: '3px 10px', background: 'rgba(0,200,150,0.1)', color: '#00C896', borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{tag}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
+          {/* Left: tabs */}
+          <div>
+            {/* Tab nav */}
+            <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 4 }}>
+              {[['videos', '최근 영상'], ['service', '광고 서비스'], ['reviews', '리뷰']].map(([val, label]) => (
+                <button key={val} onClick={() => setTab(val as any)}
+                  style={{ flex: 1, padding: '8px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: tab === val ? 700 : 500, background: tab === val ? 'var(--bg-card2)' : 'transparent', color: tab === val ? 'var(--text)' : 'var(--text-muted)', transition: 'all 0.2s' }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {tab === 'videos' && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
+                {videos.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)', fontSize: 14, gridColumn: '1/-1' }}>영상을 불러오는 중...</p>
+                ) : videos.map(v => (
+                  <a key={v.id} href={`https://youtube.com/watch?v=${v.id}`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                    <div className="card" style={{ overflow: 'hidden' }}>
+                      <div style={{ position: 'relative' }}>
+                        <img src={v.thumbnail} alt={v.title} style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block' }} />
+                        <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.8)', color: 'white', borderRadius: 4, padding: '2px 6px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 3 }}>
+                          <Play size={9} fill="white" /> {v.viewCount}
+                        </div>
+                      </div>
+                      <div style={{ padding: '10px 12px' }}>
+                        <p style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.4, color: 'var(--text)' }}>{v.title}</p>
+                        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{v.publishedAt}</p>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
+
+            {tab === 'service' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {SERVICES.map(s => (
+                  <div key={s.type} className="card" style={{ padding: 20 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                      <div>
+                        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{s.type}</h3>
+                        <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{s.desc}</p>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 16 }}>
+                        <div style={{ fontSize: 18, fontWeight: 900, color: '#FF2D55' }}>{s.price}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>작업 {s.days}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {tab === 'reviews' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {REVIEWS.map((r, i) => (
+                  <div key={i} className="card" style={{ padding: 20 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                      <div>
+                        <p style={{ fontWeight: 600, fontSize: 14 }}>{r.name}</p>
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{r.company}</p>
+                      </div>
+                      <div style={{ display: 'flex', gap: 2 }}>
+                        {[1,2,3,4,5].map(s => <Star key={s} size={13} fill={s <= r.rating ? '#FFB800' : 'none'} color="#FFB800" />)}
+                      </div>
+                    </div>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>{r.text}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>{r.date}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Right: CTA */}
+          <div style={{ position: 'sticky', top: 88 }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: 24, marginBottom: 14 }}>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 6 }}>최소 광고 비용</p>
+              <p style={{ fontSize: 28, fontWeight: 900, color: '#FF2D55', marginBottom: 4 }}>{channel.estimatedPrice}</p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>실제 비용은 광고 형태에 따라 달라집니다</p>
+              <Link href="/login" style={{ display: 'block', width: '100%', padding: '14px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 10, fontWeight: 700, fontSize: 15, textAlign: 'center', marginBottom: 10 }}>
+                광고 문의하기
+              </Link>
+              <button style={{ width: '100%', padding: '12px', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 10, fontWeight: 600, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <MessageSquare size={15} /> 메시지 보내기
+              </button>
+            </div>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: 20 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>채널 정보</p>
+              {[
+                { label: '플랫폼', value: '유튜브' },
+                { label: '구독자', value: channel.subscriberCount },
+                { label: '총 영상', value: `${channel.videoCount}개` },
+                { label: '총 조회수', value: channel.viewCount },
+                { label: '국가', value: channel.country || 'KR' },
+              ].map(info => (
+                <div key={info.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 13 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>{info.label}</span>
+                  <span style={{ fontWeight: 600 }}>{info.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+}
