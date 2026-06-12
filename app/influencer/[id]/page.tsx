@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { getChannelById, getChannelVideos, YoutubeChannel, YoutubeVideo } from '../../lib/youtube';
+import { supabase } from '../../lib/supabase';
 import { Star, Users, Play, ExternalLink, Heart, Share2, MessageSquare, CheckCircle, ArrowLeft } from 'lucide-react';
 
 const REVIEWS = [
@@ -25,6 +26,7 @@ export default function InfluencerDetail() {
   const [videos, setVideos] = useState<YoutubeVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
   const [tab, setTab] = useState<'videos' | 'audience' | 'service' | 'reviews'>('videos');
   const [audiencePeriod, setAudiencePeriod] = useState<'1주일' | '1개월' | '3개월' | '1년'>('1개월');
   const [isMobile, setIsMobile] = useState(false);
@@ -42,6 +44,12 @@ export default function InfluencerDetail() {
       setChannel(ch);
       setVideos(vids);
       setLoading(false);
+    });
+    // 찜 여부 확인
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return;
+      supabase.from('favorites').select('id').eq('advertiser_id', session.user.id).eq('influencer_channel_id', id).single()
+        .then(({ data }) => { if (data) setLiked(true); });
     });
   }, [id]);
 

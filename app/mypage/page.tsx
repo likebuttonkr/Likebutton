@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { supabase } from '../lib/supabase';
-import { User, Briefcase, Star, Bell, Settings, Heart, CreditCard, Tag, DollarSign, ChevronRight, LogOut, Edit2, Check, X, ToggleLeft, ToggleRight } from 'lucide-react';
+import { User, Briefcase, Star, Bell, Settings, Heart, CreditCard, Tag, DollarSign, LogOut, Edit2, Check, X, ToggleLeft, ToggleRight, Plus, Trash2, ExternalLink } from 'lucide-react';
+
+const CATEGORIES = ['뷰티/패션','음식/요리','게임','여행','운동/스포츠','엔터테인먼트','IT/테크','교육','라이프스타일','경제/비즈니스'];
 
 export default function MyPage() {
   const router = useRouter();
@@ -16,8 +18,23 @@ export default function MyPage() {
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', company: '', phone: '', channel_name: '' });
   const [notifSettings, setNotifSettings] = useState({ message: true, notice: true, ad_request: true, stage: true });
+  const [emailAgree, setEmailAgree] = useState(false);
+  const [smsAgree, setSmsAgree] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // 서비스 관리
+  const [services, setServices] = useState<any[]>([]);
+  const [serviceForm, setServiceForm] = useState({ title: '', description: '', category: '', channel_name: '', channel_url: '', subscriber_count: '', price_branded: '', price_ppl: '', price_custom: '협의', platform: 'youtube' });
+  const [showServiceForm, setShowServiceForm] = useState(false);
+  const [serviceLoading, setServiceLoading] = useState(false);
+
+  // 관심 인플루언서
+  const [favorites, setFavorites] = useState<any[]>([]);
+
+  // Q&A
+  const [qnaList, setQnaList] = useState<any[]>([]);
+  const [qnaForm, setQnaForm] = useState({ category: '건의사항', title: '', content: '' });
+  const [showQnaForm, setShowQnaForm] = useState(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -25,8 +42,6 @@ export default function MyPage() {
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
-  const [emailAgree, setEmailAgree] = useState(false);
-  const [smsAgree, setSmsAgree] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -37,18 +52,57 @@ export default function MyPage() {
           setProfile(data);
           setEditForm({ name: data?.name || '', company: data?.company || '', phone: data?.phone || '', channel_name: data?.channel_name || '' });
           setLoading(false);
+          if (data?.user_type === 'influencer') loadServices(session.user.id);
+          else { loadFavorites(session.user.id); loadQna(session.user.id); }
         });
     });
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
+  const loadServices = async (uid: string) => {
+    const { data } = await supabase.from('services').select('*').eq('influencer_id', uid).order('created_at', { ascending: false });
+    setServices(data || []);
   };
+
+  const loadFavorites = async (uid: string) => {
+    const { data } = await supabase.from('favorites').select('*').eq('advertiser_id', uid).order('created_at', { ascending: false });
+    setFavorites(data || []);
+  };
+
+  const loadQna = async (uid: string) => {
+    const { data } = await supabase.from('qna').select('*').eq('user_id', uid).order('created_at', { ascending: false });
+    setQnaList(data || []);
+  };
+
+  const handleLogout = async () => { await supabase.auth.signOut(); router.push('/'); };
 
   const handleSaveProfile = async () => {
     const { error } = await supabase.from('profiles').update(editForm).eq('id', user.id);
     if (!error) { setProfile({ ...profile, ...editForm }); setEditMode(false); }
+  };
+
+  const handleAddService = async () => {
+    if (!serviceForm.title || !serviceForm.category) { alert('서비스명과 카테고리를 입력해주세요.'); return; }
+    setServiceLoading(true);
+    const { error } = await supabase.from('services').insert({ ...serviceForm, influencer_id: user.id, price_branded: parseInt(serviceForm.price_branded) || 0, price_ppl: parseInt(serviceForm.price_ppl) || 0 });
+    if (!error) { await loadServices(user.id); setShowServiceForm(false); setServiceForm({ title: '', description: '', category: '', channel_name: '', channel_url: '', subscriber_count: '', price_branded: '', price_ppl: '', price_custom: '협의', platform: 'youtube' }); }
+    setServiceLoading(false);
+  };
+
+  const handleDeleteService = async (id: number) => {
+    if (!confirm('서비스를 삭제하시겠어요?')) return;
+    await supabase.from('services').delete().eq('id', id);
+    await loadServices(user.id);
+  };
+
+  const handleDeleteFavorite = async (id: number) => {
+    await supabase.from('favorites').delete().eq('id', id);
+    await loadFavorites(user.id);
+  };
+
+  const handleAddQna = async () => {
+    if (!qnaForm.title || !qnaForm.content) { alert('제목과 내용을 입력해주세요.'); return; }
+    const { error } = await supabase.from('qna').insert({ ...qnaForm, user_id: user.id });
+    if (!error) { await loadQna(user.id); setShowQnaForm(false); setQnaForm({ category: '건의사항', title: '', content: '' }); }
   };
 
   const isInfluencer = profile?.user_type === 'influencer';
@@ -68,24 +122,21 @@ export default function MyPage() {
     { id: 'payments', label: '결제 내역', icon: CreditCard },
     { id: 'coupons', label: '쿠폰', icon: Tag },
     { id: 'favorites', label: '관심 인플루언서', icon: Heart },
+    { id: 'qna', label: 'Q&A', icon: Bell },
     { id: 'notifications', label: '알림', icon: Bell },
     { id: 'settings', label: '설정', icon: Settings },
   ];
 
   const menus = isInfluencer ? INFLUENCER_MENUS : ADVERTISER_MENUS;
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <p style={{ color: 'var(--text-muted)' }}>로딩 중...</p>
-    </div>
-  );
+  if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: 'var(--text-muted)' }}>로딩 중...</p></div>;
 
   return (
     <div>
       <Header />
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: isMobile ? '16px' : '32px 24px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '220px 1fr', gap: isMobile ? 16 : 24, alignItems: 'start' }}>
         {/* Sidebar */}
-        <aside style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', position: 'sticky', top: 88 }}>
+        <aside style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', position: isMobile ? 'static' : 'sticky', top: 88 }}>
           <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', textAlign: 'center' }}>
             <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', fontSize: 22, fontWeight: 900, color: 'white' }}>
               {(profile?.name || user?.email || '?')[0].toUpperCase()}
@@ -95,16 +146,13 @@ export default function MyPage() {
             <span style={{ fontSize: 11, fontWeight: 700, color: isInfluencer ? '#FF2D55' : '#FFB800', background: isInfluencer ? 'rgba(255,45,85,0.1)' : 'rgba(255,184,0,0.1)', padding: '2px 10px', borderRadius: 20 }}>
               {isInfluencer ? '인플루언서' : '광고주'}
             </span>
-            {isInfluencer && (
-              <p style={{ fontSize: 13, fontWeight: 700, marginTop: 10, color: '#00C896' }}>수익금 <span style={{ fontSize: 16 }}>0원</span></p>
-            )}
           </div>
           <nav style={{ padding: '8px' }}>
             {menus.map(menu => {
               const Icon = menu.icon;
               return (
                 <button key={menu.id} onClick={() => setActiveMenu(menu.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px', border: 'none', cursor: 'pointer', borderRadius: 8, marginBottom: 2, background: activeMenu === menu.id ? 'rgba(255,45,85,0.1)' : 'transparent', color: activeMenu === menu.id ? '#FF2D55' : 'var(--text-muted)', textAlign: 'left', transition: 'all 0.15s' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px', border: 'none', cursor: 'pointer', borderRadius: 8, marginBottom: 2, background: activeMenu === menu.id ? 'rgba(255,45,85,0.1)' : 'transparent', color: activeMenu === menu.id ? '#FF2D55' : 'var(--text-muted)', textAlign: 'left' }}>
                   <Icon size={15} />
                   <span style={{ fontSize: 13, fontWeight: activeMenu === menu.id ? 700 : 400 }}>{menu.label}</span>
                 </button>
@@ -118,7 +166,7 @@ export default function MyPage() {
           </div>
         </aside>
 
-        {/* Main content */}
+        {/* Main */}
         <main>
           {/* 프로필 */}
           {activeMenu === 'profile' && (
@@ -140,7 +188,7 @@ export default function MyPage() {
                   ...(!isInfluencer ? [{ label: '회사명', value: editForm.company, field: 'company' }] : []),
                   ...(isInfluencer ? [{ label: '채널명', value: editForm.channel_name, field: 'channel_name' }] : []),
                   { label: '휴대폰번호', value: editForm.phone, field: 'phone' },
-                ].map(item => (
+                ].map((item: any) => (
                   <div key={item.label} style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, alignItems: 'center' }}>
                     <p style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>{item.label}</p>
                     {editMode && item.field
@@ -173,25 +221,126 @@ export default function MyPage() {
           {/* 서비스 관리 (인플루언서) */}
           {activeMenu === 'services' && isInfluencer && (
             <div>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px', marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <h2 style={{ fontSize: 18, fontWeight: 800 }}>서비스 관리</h2>
-                  <button style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>+ 서비스 등록</button>
+                  <button onClick={() => setShowServiceForm(!showServiceForm)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                    <Plus size={14} /> 서비스 등록
+                  </button>
                 </div>
-                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-                  <p style={{ fontSize: 40, marginBottom: 14 }}>📋</p>
-                  <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>아직 등록된 서비스가 없어요</p>
-                  <p style={{ fontSize: 13, marginBottom: 20 }}>광고 서비스를 등록하면 광고주들이 찾을 수 있어요</p>
-                  <div style={{ background: 'var(--bg-card2)', borderRadius: 12, padding: '20px', textAlign: 'left', maxWidth: 400, margin: '0 auto' }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>서비스 등록 방법</p>
-                    {['카테고리 선택 (대/중/소분류)', '채널 정보 입력', '광고 상품 설정 (브랜디드/PPL/맞춤형)', '최소 광고비 설정', '서비스 소개 작성'].map((step, i) => (
-                      <p key={i} style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(255,45,85,0.15)', color: '#FF2D55', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, flexShrink: 0 }}>{i + 1}</span>
-                        {step}
-                      </p>
+
+                {/* 서비스 등록 폼 */}
+                {showServiceForm && (
+                  <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px', marginBottom: 20 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>새 서비스 등록</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>플랫폼 *</label>
+                        <select value={serviceForm.platform} onChange={e => setServiceForm(f => ({ ...f, platform: e.target.value }))}
+                          style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+                          <option value="youtube">📺 유튜브</option>
+                          <option value="instagram">📸 인스타그램</option>
+                          <option value="tiktok">🎵 틱톡</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>카테고리 *</label>
+                        <select value={serviceForm.category} onChange={e => setServiceForm(f => ({ ...f, category: e.target.value }))}
+                          style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+                          <option value="">카테고리 선택</option>
+                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>서비스 제목 *</label>
+                        <input value={serviceForm.title} onChange={e => setServiceForm(f => ({ ...f, title: e.target.value }))} placeholder="서비스 제목 입력" style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>채널명</label>
+                        <input value={serviceForm.channel_name} onChange={e => setServiceForm(f => ({ ...f, channel_name: e.target.value }))} placeholder="채널명 입력" style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>채널 URL</label>
+                        <input value={serviceForm.channel_url} onChange={e => setServiceForm(f => ({ ...f, channel_url: e.target.value }))} placeholder="https://youtube.com/..." style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>구독자/팔로워 수</label>
+                        <input value={serviceForm.subscriber_count} onChange={e => setServiceForm(f => ({ ...f, subscriber_count: e.target.value }))} placeholder="예: 10만" style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} />
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: 12 }}>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>서비스 소개</label>
+                      <textarea value={serviceForm.description} onChange={e => setServiceForm(f => ({ ...f, description: e.target.value }))} placeholder="서비스 소개를 입력하세요"
+                        style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, resize: 'vertical', minHeight: 80, boxSizing: 'border-box' }} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 16 }}>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>브랜디드 최소광고비</label>
+                        <input value={serviceForm.price_branded} onChange={e => setServiceForm(f => ({ ...f, price_branded: e.target.value }))} placeholder="예: 3000000" type="number" style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>PPL 최소광고비</label>
+                        <input value={serviceForm.price_ppl} onChange={e => setServiceForm(f => ({ ...f, price_ppl: e.target.value }))} placeholder="예: 1500000" type="number" style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>맞춤형</label>
+                        <input value={serviceForm.price_custom} onChange={e => setServiceForm(f => ({ ...f, price_custom: e.target.value }))} placeholder="협의" style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} />
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={handleAddService} disabled={serviceLoading}
+                        style={{ padding: '9px 20px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                        {serviceLoading ? '등록 중...' : '등록하기'}
+                      </button>
+                      <button onClick={() => setShowServiceForm(false)} style={{ padding: '9px 16px', background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>취소</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* 서비스 목록 */}
+                {services.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                    <p style={{ fontSize: 36, marginBottom: 12 }}>📋</p>
+                    <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: 'var(--text)' }}>등록된 서비스가 없어요</p>
+                    <p style={{ fontSize: 13 }}>서비스를 등록하면 광고주들이 찾을 수 있어요</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {services.map(svc => (
+                      <div key={svc.id} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                          <div>
+                            <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
+                              <span style={{ fontSize: 11, background: 'rgba(255,45,85,0.1)', color: '#FF2D55', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>
+                                {svc.platform === 'youtube' ? '📺' : svc.platform === 'instagram' ? '📸' : '🎵'} {svc.platform}
+                              </span>
+                              <span style={{ fontSize: 11, background: 'var(--bg-card)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: 20 }}>{svc.category}</span>
+                            </div>
+                            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>{svc.title}</h3>
+                            {svc.channel_name && <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>채널: {svc.channel_name} {svc.subscriber_count && `· ${svc.subscriber_count}`}</p>}
+                          </div>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            {svc.channel_url && (
+                              <a href={svc.channel_url} target="_blank" rel="noreferrer" style={{ padding: '5px 8px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+                                <ExternalLink size={13} />
+                              </a>
+                            )}
+                            <button onClick={() => handleDeleteService(svc.id)} style={{ padding: '5px 8px', background: 'rgba(255,45,85,0.08)', border: '1px solid rgba(255,45,85,0.2)', borderRadius: 6, color: '#FF2D55', cursor: 'pointer' }}>
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </div>
+                        {svc.description && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, lineHeight: 1.5 }}>{svc.description}</p>}
+                        <div style={{ display: 'flex', gap: 12 }}>
+                          {svc.price_branded > 0 && <span style={{ fontSize: 12, color: '#FF2D55', fontWeight: 600 }}>브랜디드 {svc.price_branded.toLocaleString()}원~</span>}
+                          {svc.price_ppl > 0 && <span style={{ fontSize: 12, color: '#FF6B35', fontWeight: 600 }}>PPL {svc.price_ppl.toLocaleString()}원~</span>}
+                          {svc.price_custom && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>맞춤형 {svc.price_custom}</span>}
+                        </div>
+                      </div>
                     ))}
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -199,35 +348,26 @@ export default function MyPage() {
           {/* 프로젝트 관리 */}
           {activeMenu === 'projects' && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 24 }}>프로젝트 관리</h2>
-              {/* Platform tabs */}
+              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>프로젝트 관리</h2>
               <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-                {['유튜브', '인스타그램', '틱톡'].map(t => (
-                  <button key={t} style={{ padding: '7px 16px', borderRadius: 8, border: t === '유튜브' ? 'none' : '1px solid var(--border)', background: t === '유튜브' ? 'rgba(255,45,85,0.1)' : 'transparent', color: t === '유튜브' ? '#FF2D55' : 'var(--text-muted)', fontSize: 13, fontWeight: t === '유튜브' ? 700 : 400, cursor: 'pointer' }}>{t}</button>
+                {['유튜브', '인스타그램', '틱톡'].map((t, i) => (
+                  <button key={t} style={{ padding: '7px 16px', borderRadius: 8, border: i === 0 ? 'none' : '1px solid var(--border)', background: i === 0 ? 'rgba(255,45,85,0.1)' : 'transparent', color: i === 0 ? '#FF2D55' : 'var(--text-muted)', fontSize: 13, fontWeight: i === 0 ? 700 : 400, cursor: 'pointer' }}>{t}</button>
                 ))}
               </div>
               <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-                <p style={{ fontSize: 40, marginBottom: 14 }}>📂</p>
-                <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>진행중인 프로젝트가 없어요</p>
-                <p style={{ fontSize: 13, marginBottom: 20 }}>
-                  {isInfluencer ? '광고주가 광고를 요청하면 여기서 확인할 수 있어요' : '인플루언서를 찾아 광고를 요청해보세요'}
-                </p>
-                {!isInfluencer && (
-                  <Link href="/search" style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14 }}>인플루언서 찾기</Link>
-                )}
+                <p style={{ fontSize: 36, marginBottom: 12 }}>📂</p>
+                <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: 'var(--text)' }}>진행중인 프로젝트가 없어요</p>
+                <p style={{ fontSize: 13, marginBottom: 20 }}>{isInfluencer ? '광고주가 광고를 요청하면 여기서 확인할 수 있어요' : '인플루언서를 찾아 광고를 요청해보세요'}</p>
+                {!isInfluencer && <Link href="/search" style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14 }}>인플루언서 찾기</Link>}
               </div>
             </div>
           )}
 
-          {/* 수익 관리 (인플루언서) */}
+          {/* 수익 관리 */}
           {activeMenu === 'revenue' && isInfluencer && (
             <div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
-                {[
-                  { label: '출금 가능 수익금', value: '0원', color: '#FF2D55' },
-                  { label: '예상 수익금', value: '0원', color: '#FFB800' },
-                  { label: '출금 완료 수익금', value: '0원', color: '#00C896' },
-                ].map(s => (
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 14, marginBottom: 16 }}>
+                {[{ label: '출금 가능 수익금', value: '0원', color: '#FF2D55' }, { label: '예상 수익금', value: '0원', color: '#FFB800' }, { label: '출금 완료 수익금', value: '0원', color: '#00C896' }].map(s => (
                   <div key={s.label} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px' }}>
                     <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{s.label}</p>
                     <p style={{ fontSize: 22, fontWeight: 900, color: s.color }}>{s.value}</p>
@@ -235,19 +375,14 @@ export default function MyPage() {
                 ))}
               </div>
               <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-                  {['수익 내역', '출금 내역', '월별 수수료 세금계산서'].map((t, i) => (
-                    <button key={t} style={{ padding: '7px 14px', borderRadius: 8, border: i === 0 ? 'none' : '1px solid var(--border)', background: i === 0 ? 'rgba(255,45,85,0.1)' : 'transparent', color: i === 0 ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, fontWeight: i === 0 ? 700 : 400, cursor: 'pointer' }}>{t}</button>
-                  ))}
-                </div>
                 <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-                  <p style={{ fontSize: 40, marginBottom: 12 }}>💰</p>
+                  <p style={{ fontSize: 36, marginBottom: 12 }}>💰</p>
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>아직 수익 내역이 없어요</p>
                   <p style={{ fontSize: 13, marginTop: 6 }}>광고 진행 후 수익이 발생하면 여기서 확인할 수 있어요</p>
                 </div>
                 <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
                   <p style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>출금 계좌 정보</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 10, marginBottom: 10 }}>
                     {['은행 선택', '계좌번호', '예금주명'].map(p => <input key={p} placeholder={p} style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} />)}
                   </div>
                   <button style={{ padding: '8px 20px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>출금 신청</button>
@@ -256,57 +391,135 @@ export default function MyPage() {
             </div>
           )}
 
-          {/* 결제 내역 (광고주) */}
+          {/* 결제 내역 */}
           {activeMenu === 'payments' && !isInfluencer && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 24 }}>결제 내역</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>결제 내역</h2>
               <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-                <p style={{ fontSize: 40, marginBottom: 14 }}>🧾</p>
-                <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>결제 내역이 없어요</p>
+                <p style={{ fontSize: 36, marginBottom: 12 }}>🧾</p>
+                <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: 'var(--text)' }}>결제 내역이 없어요</p>
                 <p style={{ fontSize: 13 }}>광고 결제 후 내역이 여기에 표시돼요</p>
               </div>
             </div>
           )}
 
-          {/* 쿠폰 (광고주) */}
+          {/* 쿠폰 */}
           {activeMenu === 'coupons' && !isInfluencer && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 24 }}>쿠폰</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>쿠폰</h2>
               <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-                <p style={{ fontSize: 40, marginBottom: 14 }}>🎟️</p>
-                <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>보유한 쿠폰이 없어요</p>
-                <p style={{ fontSize: 13 }}>이벤트나 프로모션을 통해 쿠폰을 받을 수 있어요</p>
-                <Link href="/cs" style={{ display: 'inline-block', marginTop: 16, padding: '8px 20px', background: 'rgba(255,45,85,0.1)', color: '#FF2D55', textDecoration: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600 }}>이벤트 확인하기</Link>
+                <p style={{ fontSize: 36, marginBottom: 12 }}>🎟️</p>
+                <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: 'var(--text)' }}>보유한 쿠폰이 없어요</p>
+                <p style={{ fontSize: 13, marginBottom: 16 }}>이벤트나 프로모션을 통해 쿠폰을 받을 수 있어요</p>
+                <Link href="/cs" style={{ display: 'inline-block', padding: '8px 20px', background: 'rgba(255,45,85,0.1)', color: '#FF2D55', textDecoration: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600 }}>이벤트 확인하기</Link>
               </div>
             </div>
           )}
 
-          {/* 관심 인플루언서 (광고주) */}
+          {/* 관심 인플루언서 */}
           {activeMenu === 'favorites' && !isInfluencer && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>관심 인플루언서</h2>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-                {['유튜브', '인스타그램', '틱톡'].map((t, i) => (
-                  <button key={t} style={{ padding: '7px 16px', borderRadius: 8, border: i === 0 ? 'none' : '1px solid var(--border)', background: i === 0 ? 'rgba(255,45,85,0.1)' : 'transparent', color: i === 0 ? '#FF2D55' : 'var(--text-muted)', fontSize: 13, fontWeight: i === 0 ? 700 : 400, cursor: 'pointer' }}>{t}</button>
-                ))}
+              {favorites.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                  <p style={{ fontSize: 36, marginBottom: 12 }}>❤️</p>
+                  <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: 'var(--text)' }}>관심 인플루언서가 없어요</p>
+                  <p style={{ fontSize: 13, marginBottom: 20 }}>인플루언서 상세 페이지에서 하트를 눌러 저장하세요</p>
+                  <Link href="/search" style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14 }}>인플루언서 찾기</Link>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+                  {favorites.map(fav => (
+                    <div key={fav.id} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 12, padding: 16 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                        <img src={fav.channel_thumbnail || 'https://i.pravatar.cc/150'} alt="" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }} />
+                        <button onClick={() => handleDeleteFavorite(fav.id)} style={{ background: 'none', border: 'none', color: '#FF2D55', cursor: 'pointer', fontSize: 18 }}>❤️</button>
+                      </div>
+                      <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{fav.channel_name}</p>
+                      <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>{fav.subscriber_count}</p>
+                      <Link href={`/influencer/${fav.influencer_channel_id}`} style={{ fontSize: 12, color: '#FF2D55', textDecoration: 'none', fontWeight: 600 }}>상세 보기 →</Link>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Q&A */}
+          {activeMenu === 'qna' && !isInfluencer && (
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h2 style={{ fontSize: 18, fontWeight: 800 }}>Q&A</h2>
+                <button onClick={() => setShowQnaForm(!showQnaForm)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                  <Plus size={14} /> 문의 등록
+                </button>
               </div>
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-                <p style={{ fontSize: 40, marginBottom: 14 }}>❤️</p>
-                <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>관심 인플루언서가 없어요</p>
-                <p style={{ fontSize: 13, marginBottom: 20 }}>인플루언서 상세 페이지에서 하트를 눌러 저장하세요</p>
-                <Link href="/search" style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14 }}>인플루언서 찾기</Link>
-              </div>
+              {showQnaForm && (
+                <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px', marginBottom: 20 }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>문의 등록</h3>
+                  <div style={{ display: 'grid', gap: 10 }}>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>상담 분류</label>
+                      <select value={qnaForm.category} onChange={e => setQnaForm(f => ({ ...f, category: e.target.value }))}
+                        style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+                        {['건의사항', '신고하기', '서비스 오류'].map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>제목</label>
+                      <input value={qnaForm.title} onChange={e => setQnaForm(f => ({ ...f, title: e.target.value }))} placeholder="문의 제목을 입력하세요" style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>내용</label>
+                      <textarea value={qnaForm.content} onChange={e => setQnaForm(f => ({ ...f, content: e.target.value }))} placeholder="문의 내용을 입력하세요"
+                        style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, resize: 'vertical', minHeight: 100, boxSizing: 'border-box' }} />
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={handleAddQna} style={{ padding: '9px 20px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>등록하기</button>
+                      <button onClick={() => setShowQnaForm(false)} style={{ padding: '9px 16px', background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>취소</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {qnaList.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                  <p style={{ fontSize: 36, marginBottom: 12 }}>💬</p>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>문의 내역이 없어요</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {qnaList.map(q => (
+                    <div key={q.id} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                          <span style={{ fontSize: 11, background: 'rgba(255,45,85,0.1)', color: '#FF2D55', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>{q.category}</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: q.status === '답변완료' ? '#00C896' : '#FFB800', background: q.status === '답변완료' ? 'rgba(0,200,150,0.1)' : 'rgba(255,184,0,0.1)', padding: '2px 8px', borderRadius: 20 }}>{q.status}</span>
+                        </div>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(q.created_at).toLocaleDateString('ko-KR')}</span>
+                      </div>
+                      <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{q.title}</p>
+                      <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>{q.content}</p>
+                      {q.answer && (
+                        <div style={{ marginTop: 10, padding: '10px', background: 'rgba(0,200,150,0.05)', border: '1px solid rgba(0,200,150,0.15)', borderRadius: 8 }}>
+                          <p style={{ fontSize: 12, color: '#00C896', fontWeight: 600, marginBottom: 4 }}>답변</p>
+                          <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>{q.answer}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
           {/* 알림 */}
           {activeMenu === 'notifications' && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 24 }}>알림</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>알림</h2>
               <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-                <p style={{ fontSize: 40, marginBottom: 14 }}>🔔</p>
-                <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>새 알림이 없어요</p>
-                <p style={{ fontSize: 13 }}>새로운 알림이 오면 여기서 확인할 수 있어요</p>
+                <p style={{ fontSize: 36, marginBottom: 12 }}>🔔</p>
+                <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>새 알림이 없어요</p>
               </div>
             </div>
           )}
@@ -315,8 +528,8 @@ export default function MyPage() {
           {activeMenu === 'settings' && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 24 }}>설정</h2>
-              <div style={{ marginBottom: 28 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
                   <p style={{ fontSize: 14, fontWeight: 700 }}>알림 전체 설정</p>
                   <button onClick={() => { const all = Object.values(notifSettings).every(Boolean); setNotifSettings({ message: !all, notice: !all, ad_request: !all, stage: !all }); }}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: Object.values(notifSettings).every(Boolean) ? '#FF2D55' : 'var(--text-muted)' }}>
@@ -326,20 +539,13 @@ export default function MyPage() {
                 {[
                   { key: 'message', label: '메시지 알림', desc: '메시지가 있을 때 알림으로 받을 수 있습니다.' },
                   { key: 'notice', label: '공지/이벤트 알림', desc: '공지/이벤트를 알림으로 받을 수 있습니다.' },
-                  { key: 'ad_request', label: isInfluencer ? '광고 요청 알림' : '안전결제 요청 알림', desc: isInfluencer ? '광고 요청이 있을 때 알림으로 받을 수 있습니다.' : '안전결제 요청이 있을 때 알림으로 받을 수 있습니다.' },
-                  { key: 'stage', label: isInfluencer ? '단계 확정 알림' : '단계 저장 알림', desc: isInfluencer ? '광고주가 프로젝트 단계 확정 시 알림으로 받을 수 있습니다.' : '인플루언서가 프로젝트 단계별 저장 시 알림으로 받을 수 있습니다.' },
+                  { key: 'ad_request', label: isInfluencer ? '광고 요청 알림' : '안전결제 요청 알림', desc: '요청이 있을 때 알림으로 받을 수 있습니다.' },
+                  { key: 'stage', label: '단계 알림', desc: '프로젝트 단계 변경 시 알림으로 받을 수 있습니다.' },
                 ].map(item => (
                   <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
                     <div>
                       <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{item.label}</p>
                       <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{item.desc}</p>
-                      <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
-                        {['이메일', 'SMS'].map(ch => (
-                          <label key={ch} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer' }}>
-                            <input type="checkbox" /> {ch}
-                          </label>
-                        ))}
-                      </div>
                     </div>
                     <button onClick={() => setNotifSettings(s => ({ ...s, [item.key]: !s[item.key as keyof typeof s] }))}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: notifSettings[item.key as keyof typeof notifSettings] ? '#FF2D55' : 'var(--text-muted)' }}>
