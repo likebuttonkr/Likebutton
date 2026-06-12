@@ -38,8 +38,8 @@ export default function Header({ isLoggedIn = false, userType = '' }: { isLogged
               </div>
             )}
           </div>
-          {['트렌드 분석', '레퍼런스', '회사 소개'].map(item => (
-            <Link key={item} href={item === '트렌드 분석' ? '/trends' : item === '레퍼런스' ? '/reference' : '/about'}
+          {['트렌드 분석', '레퍼런스', '회사 소개', '고객센터'].map(item => (
+            <Link key={item} href={item === '트렌드 분석' ? '/trends' : item === '레퍼런스' ? '/reference' : item === '회사 소개' ? '/about' : '/cs'}
               style={{ padding: '8px 14px', color: 'var(--text-muted)', textDecoration: 'none', fontWeight: 500, fontSize: 14, borderRadius: 8 }}
               className="hover:text-white hover:bg-white/5 transition-all">{item}</Link>
           ))}
@@ -85,8 +85,16 @@ export default function Header({ isLoggedIn = false, userType = '' }: { isLogged
       {/* Mobile menu */}
       {mobileOpen && (
         <div style={{ borderTop: '1px solid var(--border)', padding: 16, background: 'var(--bg)' }} className="md:hidden">
-          {['유튜브', '인스타그램', '틱톡', '트렌드 분석', '레퍼런스', '회사 소개'].map(item => (
-            <Link key={item} href="/" style={{ display: 'block', padding: '10px 4px', color: 'var(--text)', textDecoration: 'none', fontSize: 15 }}>{item}</Link>
+          {[
+            { label: '유튜브', href: '/search?platform=youtube' },
+            { label: '인스타그램', href: '/search?platform=instagram' },
+            { label: '틱톡', href: '/search?platform=tiktok' },
+            { label: '트렌드 분석', href: '/trends' },
+            { label: '레퍼런스', href: '/reference' },
+            { label: '회사 소개', href: '/about' },
+            { label: '고객센터', href: '/cs' },
+          ].map(item => (
+            <Link key={item.label} href={item.href} style={{ display: 'block', padding: '10px 4px', color: 'var(--text)', textDecoration: 'none', fontSize: 15 }}>{item.label}</Link>
           ))}
         </div>
       )}

@@ -30,10 +30,28 @@ export default function RequestPage() {
     setForm(f => ({ ...f, adTypes: f.adTypes.includes(type) ? f.adTypes.filter(t => t !== type) : [...f.adTypes, type] }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.projectName || !form.releaseDate || form.adTypes.length === 0) {
       alert('필수 항목을 모두 입력해주세요.'); return;
     }
+    try {
+      const { supabase } = await import('../../lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.from('projects').insert({
+          title: form.projectName,
+          advertiser_id: session.user.id,
+          platform: 'youtube',
+          ad_type: form.adTypes.join(', '),
+          budget: parseInt(form.budget.replace(/[^0-9]/g, '')) || 0,
+          status: '광고 요청',
+          target: form.target,
+          keyword: form.keyword,
+          product_info: form.productInfo,
+          release_date: form.releaseDate,
+        });
+      }
+    } catch (e) {}
     setSubmitted(true);
   };
 

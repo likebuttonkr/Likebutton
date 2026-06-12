@@ -85,3 +85,57 @@ input::placeholder { color: var(--text-muted); }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ===== 모바일 반응형 ===== */
+@media (max-width: 768px) {
+  /* Search page */
+  .search-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .search-sidebar {
+    display: none !important;
+  }
+
+  /* Influencer detail */
+  .influencer-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Admin */
+  .admin-layout aside {
+    display: none !important;
+  }
+  .admin-layout main {
+    margin-left: 0 !important;
+  }
+
+  /* Mypage */
+  .mypage-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* General */
+  .hide-mobile {
+    display: none !important;
+  }
+
+  .stats-grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .stats-grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  h1 { font-size: 1.6rem !important; }
+  h2 { font-size: 1.3rem !important; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid-4 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .card-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

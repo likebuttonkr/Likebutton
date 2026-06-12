@@ -25,7 +25,8 @@ export default function InfluencerDetail() {
   const [videos, setVideos] = useState<YoutubeVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
-  const [tab, setTab] = useState<'videos' | 'service' | 'reviews'>('videos');
+  const [tab, setTab] = useState<'videos' | 'audience' | 'service' | 'reviews'>('videos');
+  const [audiencePeriod, setAudiencePeriod] = useState<'1주일' | '1개월' | '3개월' | '1년'>('1개월');
 
   useEffect(() => {
     if (!id) return;
@@ -131,7 +132,7 @@ export default function InfluencerDetail() {
           <div>
             {/* Tab nav */}
             <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 4 }}>
-              {[['videos', '최근 영상'], ['service', '광고 서비스'], ['reviews', '리뷰']].map(([val, label]) => (
+              {[['videos', '최근 영상'], ['audience', '시청자층 분석'], ['service', '광고 서비스'], ['reviews', '리뷰']].map(([val, label]) => (
                 <button key={val} onClick={() => setTab(val as any)}
                   style={{ flex: 1, padding: '8px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: tab === val ? 700 : 500, background: tab === val ? 'var(--bg-card2)' : 'transparent', color: tab === val ? 'var(--text)' : 'var(--text-muted)', transition: 'all 0.2s' }}>
                   {label}
@@ -159,6 +160,124 @@ export default function InfluencerDetail() {
                     </div>
                   </a>
                 ))}
+              </div>
+            )}
+
+            {tab === 'audience' && (
+              <div>
+                {/* Period selector */}
+                <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
+                  {(['1주일', '1개월', '3개월', '1년'] as const).map(p => (
+                    <button key={p} onClick={() => setAudiencePeriod(p)}
+                      style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${audiencePeriod === p ? '#FF2D55' : 'var(--border)'}`, background: audiencePeriod === p ? 'rgba(255,45,85,0.1)' : 'transparent', color: audiencePeriod === p ? '#FF2D55' : 'var(--text-muted)', fontSize: 13, fontWeight: audiencePeriod === p ? 700 : 400, cursor: 'pointer' }}>
+                      {p}
+                    </button>
+                  ))}
+                </div>
+
+                {/* 조회수 증가율 */}
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px', marginBottom: 16 }}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    📈 조회수 증가율
+                    <span style={{ fontSize: 11, background: 'rgba(0,200,150,0.1)', color: '#00C896', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>+12.4%</span>
+                  </h3>
+                  {/* SVG Chart */}
+                  <svg viewBox="0 0 600 160" style={{ width: '100%', height: 160 }}>
+                    <defs>
+                      <linearGradient id="viewGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#FF2D55" stopOpacity="0.3" />
+                        <stop offset="100%" stopColor="#FF2D55" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    {/* Grid lines */}
+                    {[0,1,2,3].map(i => (
+                      <line key={i} x1="40" y1={20 + i * 35} x2="590" y2={20 + i * 35} stroke="var(--border)" strokeWidth="1" />
+                    ))}
+                    {/* Y labels */}
+                    {['100만', '75만', '50만', '25만'].map((l, i) => (
+                      <text key={l} x="35" y={24 + i * 35} textAnchor="end" fontSize="10" fill="var(--text-muted)">{l}</text>
+                    ))}
+                    {/* Area */}
+                    <path d="M60,110 L130,95 L200,80 L270,70 L340,85 L410,60 L480,45 L550,30" fill="url(#viewGrad)" stroke="none" />
+                    <path d="M60,110 L130,95 L200,80 L270,70 L340,85 L410,60 L480,45 L550,30 L550,130 L60,130 Z" fill="url(#viewGrad)" />
+                    {/* Line */}
+                    <polyline points="60,110 130,95 200,80 270,70 340,85 410,60 480,45 550,30" fill="none" stroke="#FF2D55" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    {/* Dots */}
+                    {[[60,110],[130,95],[200,80],[270,70],[340,85],[410,60],[480,45],[550,30]].map(([x,y], i) => (
+                      <circle key={i} cx={x} cy={y} r="4" fill="#FF2D55" stroke="var(--bg-card)" strokeWidth="2" />
+                    ))}
+                    {/* X labels */}
+                    {(audiencePeriod === '1주일' ? ['월','화','수','목','금','토','일'] : audiencePeriod === '1개월' ? ['1주','2주','3주','4주'] : audiencePeriod === '3개월' ? ['1월','2월','3월'] : ['1Q','2Q','3Q','4Q']).map((l, i, arr) => (
+                      <text key={l} x={60 + i * (490 / Math.max(arr.length - 1, 1))} y="150" textAnchor="middle" fontSize="10" fill="var(--text-muted)">{l}</text>
+                    ))}
+                  </svg>
+                </div>
+
+                {/* 구독자 증가율 */}
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px', marginBottom: 16 }}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    👥 구독자 증가율
+                    <span style={{ fontSize: 11, background: 'rgba(255,107,53,0.1)', color: '#FF6B35', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>+8.2%</span>
+                  </h3>
+                  <svg viewBox="0 0 600 160" style={{ width: '100%', height: 160 }}>
+                    <defs>
+                      <linearGradient id="subGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#FF6B35" stopOpacity="0.3" />
+                        <stop offset="100%" stopColor="#FF6B35" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    {[0,1,2,3].map(i => (
+                      <line key={i} x1="40" y1={20 + i * 35} x2="590" y2={20 + i * 35} stroke="var(--border)" strokeWidth="1" />
+                    ))}
+                    {['50만','40만','30만','20만'].map((l, i) => (
+                      <text key={l} x="35" y={24 + i * 35} textAnchor="end" fontSize="10" fill="var(--text-muted)">{l}</text>
+                    ))}
+                    <path d="M60,120 L130,108 L200,100 L270,88 L340,80 L410,68 L480,55 L550,40 L550,130 L60,130 Z" fill="url(#subGrad)" />
+                    <polyline points="60,120 130,108 200,100 270,88 340,80 410,68 480,55 550,40" fill="none" stroke="#FF6B35" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    {[[60,120],[130,108],[200,100],[270,88],[340,80],[410,68],[480,55],[550,40]].map(([x,y], i) => (
+                      <circle key={i} cx={x} cy={y} r="4" fill="#FF6B35" stroke="var(--bg-card)" strokeWidth="2" />
+                    ))}
+                    {(audiencePeriod === '1주일' ? ['월','화','수','목','금','토','일'] : audiencePeriod === '1개월' ? ['1주','2주','3주','4주'] : audiencePeriod === '3개월' ? ['1월','2월','3월'] : ['1Q','2Q','3Q','4Q']).map((l, i, arr) => (
+                      <text key={l} x={60 + i * (490 / Math.max(arr.length - 1, 1))} y="150" textAnchor="middle" fontSize="10" fill="var(--text-muted)">{l}</text>
+                    ))}
+                  </svg>
+                </div>
+
+                {/* 시청자 분포 */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  {/* 연령대 */}
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px' }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>👤 시청자 연령대</h3>
+                    {[['13~17세', 8], ['18~24세', 32], ['25~34세', 35], ['35~44세', 18], ['45세+', 7]].map(([age, pct]) => (
+                      <div key={age} style={{ marginBottom: 10 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{age}</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: '#FF2D55' }}>{pct}%</span>
+                        </div>
+                        <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+                          <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #FF2D55, #FF6B35)', borderRadius: 3 }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* 성별 */}
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px' }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>⚧ 시청자 성별</h3>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginBottom: 16, paddingTop: 10 }}>
+                      {[['여성', 58, '#FF2D55'], ['남성', 42, '#5B8DEF']].map(([label, pct, color]) => (
+                        <div key={label} style={{ textAlign: 'center' }}>
+                          <div style={{ width: 72, height: 72, borderRadius: '50%', background: `conic-gradient(${color} 0% ${pct}%, var(--border) ${pct}% 100%)`, margin: '0 auto 10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <span style={{ fontSize: 13, fontWeight: 900, color: color as string }}>{pct}%</span>
+                            </div>
+                          </div>
+                          <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{label}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>* 예상 데이터 기준</p>
+                  </div>
+                </div>
               </div>
             )}
 
