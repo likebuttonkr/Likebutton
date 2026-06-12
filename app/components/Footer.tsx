@@ -16,20 +16,20 @@ export default function Footer() {
           </div>
           <div>
             <h4 style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-muted)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>서비스</h4>
-            {['인플루언서 검색', '트렌드 분석', '레퍼런스', '안전결제'].map(item => (
-              <Link key={item} href="/" style={{ display: 'block', color: 'var(--text-muted)', textDecoration: 'none', fontSize: 14, marginBottom: 8 }} className="hover:text-white">{item}</Link>
+            {[['인플루언서 검색','/search'],['트렌드 분석','/trends'],['레퍼런스','/reference'],['안전결제','/']].map(([item,href]) => (
+              <Link key={item} href={href} style={{ display: 'block', color: 'var(--text-muted)', textDecoration: 'none', fontSize: 14, marginBottom: 8 }} className="hover:text-white">{item}</Link>
             ))}
           </div>
           <div>
             <h4 style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-muted)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>고객센터</h4>
-            {['공지사항', '이벤트', 'FAQ', 'Q&A'].map(item => (
-              <Link key={item} href="/" style={{ display: 'block', color: 'var(--text-muted)', textDecoration: 'none', fontSize: 14, marginBottom: 8 }} className="hover:text-white">{item}</Link>
+            {[['공지사항','/support'],['이벤트','/support'],['FAQ','/support'],['Q&A','/support']].map(([item,href]) => (
+              <Link key={item} href={href} style={{ display: 'block', color: 'var(--text-muted)', textDecoration: 'none', fontSize: 14, marginBottom: 8 }} className="hover:text-white">{item}</Link>
             ))}
           </div>
           <div>
             <h4 style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-muted)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>약관</h4>
-            {['서비스 이용약관', '개인정보 취급방침', '전자금융거래 이용약관'].map(item => (
-              <Link key={item} href="/" style={{ display: 'block', color: 'var(--text-muted)', textDecoration: 'none', fontSize: 13, marginBottom: 8 }} className="hover:text-white">{item}</Link>
+            {[['서비스 이용약관','/support'],['개인정보 취급방침','/support'],['전자금융거래 이용약관','/support']].map(([item,href]) => (
+              <Link key={item} href={href} style={{ display: 'block', color: 'var(--text-muted)', textDecoration: 'none', fontSize: 13, marginBottom: 8 }} className="hover:text-white">{item}</Link>
             ))}
           </div>
         </div>

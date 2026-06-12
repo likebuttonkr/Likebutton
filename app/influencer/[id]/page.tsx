@@ -208,8 +208,8 @@ export default function InfluencerDetail() {
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 6 }}>최소 광고 비용</p>
               <p style={{ fontSize: 28, fontWeight: 900, color: '#FF2D55', marginBottom: 4 }}>{channel.estimatedPrice}</p>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>실제 비용은 광고 형태에 따라 달라집니다</p>
-              <Link href="/login" style={{ display: 'block', width: '100%', padding: '14px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 10, fontWeight: 700, fontSize: 15, textAlign: 'center', marginBottom: 10 }}>
-                광고 문의하기
+              <Link href={`/request/${id}`} style={{ display: 'block', width: '100%', padding: '14px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 10, fontWeight: 700, fontSize: 15, textAlign: 'center', marginBottom: 10 }}>
+                광고 요청하기
               </Link>
               <button style={{ width: '100%', padding: '12px', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 10, fontWeight: 600, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 <MessageSquare size={15} /> 메시지 보내기

@@ -39,7 +39,7 @@ export default function Header({ isLoggedIn = false, userType = '' }: { isLogged
             )}
           </div>
           {['트렌드 분석', '레퍼런스', '회사 소개'].map(item => (
-            <Link key={item} href={`/${item === '트렌드 분석' ? 'trends' : item === '레퍼런스' ? 'reference' : 'about'}`}
+            <Link key={item} href={item === '트렌드 분석' ? '/trends' : item === '레퍼런스' ? '/reference' : '/about'}
               style={{ padding: '8px 14px', color: 'var(--text-muted)', textDecoration: 'none', fontWeight: 500, fontSize: 14, borderRadius: 8 }}
               className="hover:text-white hover:bg-white/5 transition-all">{item}</Link>
           ))}
