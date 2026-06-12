@@ -16,6 +16,15 @@ export default function MyPage() {
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', company: '', phone: '', channel_name: '' });
   const [notifSettings, setNotifSettings] = useState({ message: true, notice: true, ad_request: true, stage: true });
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
   const [emailAgree, setEmailAgree] = useState(false);
   const [smsAgree, setSmsAgree] = useState(false);
 
@@ -74,7 +83,7 @@ export default function MyPage() {
   return (
     <div>
       <Header />
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px', display: 'grid', gridTemplateColumns: '220px 1fr', gap: 24, alignItems: 'start' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: isMobile ? '16px' : '32px 24px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '220px 1fr', gap: isMobile ? 16 : 24, alignItems: 'start' }}>
         {/* Sidebar */}
         <aside style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', position: 'sticky', top: 88 }}>
           <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', textAlign: 'center' }}>

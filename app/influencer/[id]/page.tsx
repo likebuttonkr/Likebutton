@@ -27,6 +27,14 @@ export default function InfluencerDetail() {
   const [liked, setLiked] = useState(false);
   const [tab, setTab] = useState<'videos' | 'audience' | 'service' | 'reviews'>('videos');
   const [audiencePeriod, setAudiencePeriod] = useState<'1주일' | '1개월' | '3개월' | '1년'>('1개월');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -127,7 +135,7 @@ export default function InfluencerDetail() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: 20, alignItems: 'start' }}>
           {/* Left: tabs */}
           <div>
             {/* Tab nav */}
@@ -141,7 +149,7 @@ export default function InfluencerDetail() {
             </div>
 
             {tab === 'videos' && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(240px, 1fr))', gap: isMobile ? 10 : 14 }}>
                 {videos.length === 0 ? (
                   <p style={{ color: 'var(--text-muted)', fontSize: 14, gridColumn: '1/-1' }}>영상을 불러오는 중...</p>
                 ) : videos.map(v => (
@@ -322,7 +330,7 @@ export default function InfluencerDetail() {
           </div>
 
           {/* Right: CTA */}
-          <div style={{ position: 'sticky', top: 88 }}>
+          <div style={{ position: isMobile ? 'static' : 'sticky', top: 88 }}>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: 24, marginBottom: 14 }}>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 6 }}>최소 광고 비용</p>
               <p style={{ fontSize: 28, fontWeight: 900, color: '#FF2D55', marginBottom: 4 }}>{channel.estimatedPrice}</p>

@@ -51,6 +51,14 @@ function SearchContent() {
   const [sortBy, setSortBy] = useState('구독자수 많은순');
   const [sortOpen, setSortOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
   const [expandedCats, setExpandedCats] = useState<string[]>([]);
 
   // Filters
@@ -96,9 +104,9 @@ function SearchContent() {
           <p style={{ fontSize: 18, fontWeight: 700 }}>{platform} 준비중이에요</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '220px 1fr', gap: 16 }}>
           {/* Left sidebar - category tree */}
-          <aside>
+          {!isMobile && <aside>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', position: 'sticky', top: 88 }}>
               {TOP_TABS.map(tab => (
                 <button key={tab} onClick={() => { setTopTab(tab); setSelectedCategory(''); }}
@@ -129,7 +137,7 @@ function SearchContent() {
                 ))}
               </div>
             </div>
-          </aside>
+          </aside>}
 
           {/* Main content */}
           <div>
@@ -243,7 +251,7 @@ function SearchContent() {
 
             {/* Results */}
             {loading ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(220px, 1fr))', gap: isMobile ? 10 : 14 }}>
                 {[...Array(6)].map((_, i) => <div key={i} style={{ height: 180, background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)' }} />)}
               </div>
             ) : channels.length === 0 ? (
@@ -253,7 +261,7 @@ function SearchContent() {
                 <p style={{ fontSize: 14 }}>다른 검색어나 카테고리를 시도해보세요</p>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(220px, 1fr))', gap: isMobile ? 10 : 14 }}>
                 {channels.map((ch, idx) => (
                   <Link key={ch.id} href={`/influencer/${ch.id}`} style={{ textDecoration: 'none' }}>
                     <div className="card" style={{ padding: 18, height: '100%', display: 'flex', flexDirection: 'column' }}>
