@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { getTrendingVideos, searchChannels, YoutubeVideo, YoutubeChannel } from '../lib/youtube';
+import { INSTAGRAM_MOCK_PROFILES } from '../lib/instagram';
+import { TIKTOK_MOCK_PROFILES } from '../lib/tiktok';
 import { TrendingUp, Play, Users, ArrowUp, ArrowDown, Minus, Star } from 'lucide-react';
 import Link from 'next/link';
 
@@ -51,10 +53,23 @@ export default function TrendsPage() {
         </div>
 
         {platform !== '유튜브' ? (
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '80px 40px', textAlign: 'center' }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div>
-            <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{platform} 트렌드 준비중</p>
-            <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>곧 서비스될 예정이에요!</p>
+  <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 800 }}>🚀 {platform === '인스타그램' ? '📸' : '🎵'} 급상승 인플루언서</h2>
+              <span style={{ fontSize: 11, background: 'rgba(255,184,0,0.1)', color: '#FFB800', padding: '3px 10px', borderRadius: 20, fontWeight: 600 }}>Beta</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px,1fr))', gap: 12 }}>
+              {(platform === '인스타그램' ? INSTAGRAM_MOCK_PROFILES : TIKTOK_MOCK_PROFILES).map((p, i) => (
+                <div key={p.id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ width: 24, height: 24, borderRadius: 6, background: i < 3 ? 'linear-gradient(135deg, #FF2D55, #FF6B35)' : 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: i < 3 ? 'white' : 'var(--text-muted)', flexShrink: 0 }}>{i + 1}</span>
+                  <img src={p.avatar_url} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.display_name}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.followersFormatted} 팔로워</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>

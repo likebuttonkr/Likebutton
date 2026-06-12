@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { searchChannels, YoutubeChannel } from '../lib/youtube';
+import { INSTAGRAM_MOCK_PROFILES, InstagramProfile } from '../lib/instagram';
+import { TIKTOK_MOCK_PROFILES, TikTokProfile } from '../lib/tiktok';
 import { Search, Filter, Star, Users, ChevronDown, X, RotateCcw, TrendingUp } from 'lucide-react';
 
 const CATEGORIES = {
@@ -46,6 +48,8 @@ function SearchContent() {
   const [query, setQuery] = useState(initialQuery);
   const [inputVal, setInputVal] = useState(initialQuery);
   const [channels, setChannels] = useState<YoutubeChannel[]>([]);
+  const [igProfiles, setIgProfiles] = useState<InstagramProfile[]>(INSTAGRAM_MOCK_PROFILES);
+  const [ttProfiles, setTtProfiles] = useState<TikTokProfile[]>(TIKTOK_MOCK_PROFILES);
   const [loading, setLoading] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState('구독자수 많은순');
@@ -98,10 +102,75 @@ function SearchContent() {
         ))}
       </div>
 
-      {platform !== '유튜브' ? (
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '80px', textAlign: 'center' }}>
-          <p style={{ fontSize: 48, marginBottom: 16 }}>🚧</p>
-          <p style={{ fontSize: 18, fontWeight: 700 }}>{platform} 준비중이에요</p>
+      {platform === '인스타그램' ? (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>인스타그램 인플루언서 <strong style={{ color: '#FF2D55' }}>{igProfiles.length}명</strong></p>
+            <span style={{ fontSize: 11, background: 'rgba(255,184,0,0.1)', color: '#FFB800', padding: '3px 10px', borderRadius: 20, fontWeight: 600 }}>Beta - 실제 데이터 연동 준비중</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill, minmax(220px,1fr))', gap: isMobile ? 10 : 14 }}>
+            {igProfiles.map(p => (
+              <div key={p.id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 16 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
+                  <img src={p.avatar_url} alt={p.display_name} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.display_name}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>@{p.username}</p>
+                  </div>
+                </div>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{p.bio_description}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+                  <div>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>팔로워</p>
+                    <p style={{ fontSize: 13, fontWeight: 700 }}>{p.followersFormatted}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>최소광고비</p>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#FF2D55' }}>{p.estimatedPrice}</p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
+                  <span style={{ fontSize: 10, background: 'rgba(255,45,85,0.1)', color: '#FF2D55', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>📸 인스타그램</span>
+                  <span style={{ fontSize: 10, background: 'var(--bg-card2)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: 20 }}>{p.category}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : platform === '틱톡' ? (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>틱톡 인플루언서 <strong style={{ color: '#FF2D55' }}>{ttProfiles.length}명</strong></p>
+            <span style={{ fontSize: 11, background: 'rgba(255,184,0,0.1)', color: '#FFB800', padding: '3px 10px', borderRadius: 20, fontWeight: 600 }}>Beta - 실제 데이터 연동 준비중</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill, minmax(220px,1fr))', gap: isMobile ? 10 : 14 }}>
+            {ttProfiles.map(p => (
+              <div key={p.id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 16 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
+                  <img src={p.avatar_url} alt={p.display_name} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.display_name}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>@{p.username}</p>
+                  </div>
+                </div>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{p.bio_description}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+                  <div>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>팔로워</p>
+                    <p style={{ fontSize: 13, fontWeight: 700 }}>{p.followersFormatted}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>최소광고비</p>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#FF2D55' }}>{p.estimatedPrice}</p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
+                  <span style={{ fontSize: 10, background: 'rgba(0,0,0,0.3)', color: 'white', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>🎵 틱톡</span>
+                  <span style={{ fontSize: 10, background: 'var(--bg-card2)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: 20 }}>{p.category}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '220px 1fr', gap: 16 }}>
