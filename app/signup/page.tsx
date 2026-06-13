@@ -152,9 +152,16 @@ function SignupContent() {
             </p>
           </>
         )}
-        <Link href={userType === 'influencer' ? '/login' : '/'} style={{ padding: '12px 32px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 10, fontWeight: 700, fontSize: 15 }}>
-          {userType === 'influencer' ? '로그인하러 가기' : '메인으로 가기'}
-        </Link>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link href={userType === 'influencer' ? '/login' : '/'} style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 10, fontWeight: 700, fontSize: 15 }}>
+            {userType === 'influencer' ? '시작하기' : '메인으로 가기'}
+          </Link>
+          {userType !== 'advertiser' && (
+            <Link href="/mypage" style={{ padding: '12px 28px', background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text)', textDecoration: 'none', borderRadius: 10, fontWeight: 600, fontSize: 15 }}>
+              서비스 관리
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -260,6 +267,23 @@ function SignupContent() {
                   <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>{userType === 'advertiser' ? '담당자 이름' : '닉네임'} *</label>
                   <input value={form.name} onChange={e => update('name', e.target.value)} placeholder={userType === 'advertiser' ? '홍길동' : '채널 닉네임'} />
                 </div>
+                {userType === 'influencer' && (
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 8 }}>활동 카테고리 <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}>(중복 선택 가능)</span></label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {CATEGORIES.map(cat => (
+                        <button key={cat} type="button" onClick={() => {
+                          const sel = (form as any)._categories || [];
+                          const next = sel.includes(cat) ? sel.filter((c: string) => c !== cat) : [...sel, cat];
+                          update('_categories' as any, next);
+                        }}
+                          style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${((form as any)._categories || []).includes(cat) ? '#FF2D55' : 'var(--border)'}`, background: ((form as any)._categories || []).includes(cat) ? 'rgba(255,45,85,0.1)' : 'transparent', color: ((form as any)._categories || []).includes(cat) ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, cursor: 'pointer', fontWeight: ((form as any)._categories || []).includes(cat) ? 600 : 400 }}>
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {userType === 'advertiser' && (
                   <>
