@@ -438,36 +438,53 @@ export default function MyPage() {
                     <p style={{ fontSize: 13 }}>서비스를 등록하면 광고주들이 찾을 수 있어요</p>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     {services.map(svc => (
-                      <div key={svc.id} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                          <div>
-                            <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
-                              <span style={{ fontSize: 11, background: 'rgba(255,45,85,0.1)', color: '#FF2D55', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>
-                                {svc.platform === 'youtube' ? '📺' : svc.platform === 'instagram' ? '📸' : '🎵'} {svc.platform}
-                              </span>
-                              <span style={{ fontSize: 11, background: 'var(--bg-card)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: 20 }}>{svc.category}</span>
-                            </div>
-                            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>{svc.title}</h3>
-                            {svc.channel_name && <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>채널: {svc.channel_name} {svc.subscriber_count && `· ${svc.subscriber_count}`}</p>}
-                          </div>
-                          <div style={{ display: 'flex', gap: 6 }}>
-                            {svc.channel_url && (
-                              <a href={svc.channel_url} target="_blank" rel="noreferrer" style={{ padding: '5px 8px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-                                <ExternalLink size={13} />
-                              </a>
-                            )}
-                            <button onClick={() => handleDeleteService(svc.id)} style={{ padding: '5px 8px', background: 'rgba(255,45,85,0.08)', border: '1px solid rgba(255,45,85,0.2)', borderRadius: 6, color: '#FF2D55', cursor: 'pointer' }}>
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
+                      <div key={svc.id} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                        {/* 채널 이미지 영역 */}
+                        <div style={{ width: 64, height: 64, borderRadius: 12, background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>
+                          {svc.platform === 'youtube' ? '📺' : svc.platform === 'instagram' ? '📸' : '🎵'}
                         </div>
-                        {svc.description && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, lineHeight: 1.5 }}>{svc.description}</p>}
-                        <div style={{ display: 'flex', gap: 12 }}>
-                          {svc.price_branded > 0 && <span style={{ fontSize: 12, color: '#FF2D55', fontWeight: 600 }}>브랜디드 {svc.price_branded.toLocaleString()}원~</span>}
-                          {svc.price_ppl > 0 && <span style={{ fontSize: 12, color: '#FF6B35', fontWeight: 600 }}>PPL {svc.price_ppl.toLocaleString()}원~</span>}
-                          {svc.price_custom && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>맞춤형 {svc.price_custom}</span>}
+                        {/* 정보 영역 */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                            <div>
+                              <div style={{ display: 'flex', gap: 6, marginBottom: 5, flexWrap: 'wrap' }}>
+                                <span style={{ fontSize: 11, background: 'rgba(255,45,85,0.1)', color: '#FF2D55', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>{svc.platform}</span>
+                                {svc.category && <span style={{ fontSize: 11, background: 'var(--bg-card)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: 20 }}>{svc.category}</span>}
+                                <span style={{ fontSize: 11, background: 'rgba(0,200,150,0.1)', color: '#00C896', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>등록 완료</span>
+                              </div>
+                              <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 3 }}>{svc.title}</h3>
+                              {svc.channel_name && (
+                                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
+                                  {svc.channel_name} {svc.subscriber_count && <span style={{ color: '#FF2D55', fontWeight: 600 }}>· 구독자 {svc.subscriber_count}</span>}
+                                </p>
+                              )}
+                            </div>
+                            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                              {svc.channel_url && (
+                                <a href={svc.channel_url} target="_blank" rel="noreferrer" style={{ padding: '5px 8px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+                                  <ExternalLink size={13} />
+                                </a>
+                              )}
+                              <button onClick={() => handleDeleteService(svc.id)} style={{ padding: '5px 8px', background: 'rgba(255,45,85,0.08)', border: '1px solid rgba(255,45,85,0.2)', borderRadius: 6, color: '#FF2D55', cursor: 'pointer' }}>
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+                          {svc.description && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, lineHeight: 1.5 }}>{svc.description}</p>}
+                          {/* 가격 + 통계 */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: '1px solid var(--border)', flexWrap: 'wrap', gap: 8 }}>
+                            <div style={{ display: 'flex', gap: 10 }}>
+                              {svc.price_branded > 0 && <span style={{ fontSize: 12, color: '#FF2D55', fontWeight: 700 }}>브랜디드 {svc.price_branded.toLocaleString()}원~</span>}
+                              {svc.price_ppl > 0 && <span style={{ fontSize: 12, color: '#FF6B35', fontWeight: 700 }}>PPL {svc.price_ppl.toLocaleString()}원~</span>}
+                              {svc.price_custom && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>맞춤형 {svc.price_custom}</span>}
+                            </div>
+                            <div style={{ display: 'flex', gap: 12 }}>
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>⭐ 5.0 <span style={{ color: 'var(--text-muted)' }}>(0개 평가)</span></span>
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>프로젝트 완료 0건</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ))}
