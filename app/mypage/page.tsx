@@ -540,11 +540,31 @@ export default function MyPage() {
           {/* 결제 내역 */}
           {activeMenu === 'payments' && !isInfluencer && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>결제 내역</h2>
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-                <p style={{ fontSize: 36, marginBottom: 12 }}>🧾</p>
-                <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: 'var(--text)' }}>결제 내역이 없어요</p>
-                <p style={{ fontSize: 13 }}>광고 결제 후 내역이 여기에 표시돼요</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h2 style={{ fontSize: 18, fontWeight: 800 }}>결제 내역</h2>
+                <select style={{ padding: '7px 12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+                  {['전체', '진행중', '완료', '취소'].map(s => <option key={s}>{s}</option>)}
+                </select>
+              </div>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 700 }}>
+                  <thead>
+                    <tr style={{ background: 'var(--bg-card2)', borderBottom: '1px solid var(--border)' }}>
+                      {['주문번호', '상태', '서비스', '광고 금액', '쿠폰', '결제 금액', '세금계산서', '결제일시'].map(h => (
+                        <th key={h} style={{ padding: '10px 12px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colSpan={8} style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                        <p style={{ fontSize: 36, marginBottom: 12 }}>🧾</p>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>결제 내역이 없어요</p>
+                        <p style={{ fontSize: 13 }}>광고 결제 후 내역이 여기에 표시돼요</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
@@ -553,11 +573,31 @@ export default function MyPage() {
           {activeMenu === 'coupons' && !isInfluencer && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>쿠폰</h2>
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-                <p style={{ fontSize: 36, marginBottom: 12 }}>🎟️</p>
-                <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: 'var(--text)' }}>보유한 쿠폰이 없어요</p>
-                <p style={{ fontSize: 13, marginBottom: 16 }}>이벤트나 프로모션을 통해 쿠폰을 받을 수 있어요</p>
-                <Link href="/cs" style={{ display: 'inline-block', padding: '8px 20px', background: 'rgba(255,45,85,0.1)', color: '#FF2D55', textDecoration: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600 }}>이벤트 확인하기</Link>
+              {/* 쿠폰 목록 샘플 UI */}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14, marginBottom: 20 }}>
+                {[
+                  { name: '신규 가입 할인 쿠폰', type: '정률', value: '10%', condition: '첫 결제 시 할인', period: '2024.07.01 ~ 2024.08.30' },
+                  { name: '여름 프로모션 쿠폰', type: '정액', value: '50,000원', condition: '1,000,000원 이상 결제 시 할인', period: '2024.07.01 ~ 2024.08.30' },
+                ].map((c, i) => (
+                  <div key={i} style={{ border: '2px dashed var(--border)', borderRadius: 14, padding: '18px', display: 'flex', gap: 16, alignItems: 'center', background: 'var(--bg-card2)' }}>
+                    <div style={{ width: 70, height: 70, borderRadius: 12, background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>할인 쿠폰</span>
+                      <span style={{ fontSize: 18, fontWeight: 900, color: 'white', lineHeight: 1.2 }}>{c.value}</span>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{c.name}</p>
+                      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>할인조건: {c.condition}</p>
+                      <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>사용기간: {c.period}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ textAlign: 'center', padding: '24px', border: '1px solid var(--border)', borderRadius: 10 }}>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>쿠폰 코드가 있으신가요?</p>
+                <div style={{ display: 'flex', gap: 8, maxWidth: 320, margin: '0 auto' }}>
+                  <input placeholder="쿠폰 코드 입력" style={{ flex: 1, fontSize: 13, padding: '9px 12px', height: 'auto' }} />
+                  <button style={{ padding: '9px 16px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>등록</button>
+                </div>
               </div>
             </div>
           )}
@@ -565,7 +605,14 @@ export default function MyPage() {
           {/* 관심 인플루언서 */}
           {activeMenu === 'favorites' && !isInfluencer && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>관심 인플루언서</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h2 style={{ fontSize: 18, fontWeight: 800 }}>관심 인플루언서</h2>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {['유튜브', '인스타그램', '틱톡'].map((p, i) => (
+                    <button key={p} style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${i === 0 ? '#FF2D55' : 'var(--border)'}`, background: i === 0 ? 'rgba(255,45,85,0.1)' : 'transparent', color: i === 0 ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}>{p}</button>
+                  ))}
+                </div>
+              </div>
               {favorites.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
                   <p style={{ fontSize: 36, marginBottom: 12 }}>❤️</p>
@@ -688,15 +735,29 @@ export default function MyPage() {
                   { key: 'ad_request', label: isInfluencer ? '광고 요청 알림' : '안전결제 요청 알림', desc: '요청이 있을 때 알림으로 받을 수 있습니다.' },
                   { key: 'stage', label: '단계 알림', desc: '프로젝트 단계 변경 시 알림으로 받을 수 있습니다.' },
                 ].map(item => (
-                  <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{item.label}</p>
-                      <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{item.desc}</p>
+                  <div key={item.key} style={{ padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: notifSettings[item.key as keyof typeof notifSettings] ? 10 : 0 }}>
+                      <div>
+                        <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{item.label}</p>
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{item.desc}</p>
+                      </div>
+                      <button onClick={() => setNotifSettings(s => ({ ...s, [item.key]: !s[item.key as keyof typeof s] }))}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: notifSettings[item.key as keyof typeof notifSettings] ? '#FF2D55' : 'var(--text-muted)', flexShrink: 0 }}>
+                        {notifSettings[item.key as keyof typeof notifSettings] ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
+                      </button>
                     </div>
-                    <button onClick={() => setNotifSettings(s => ({ ...s, [item.key]: !s[item.key as keyof typeof s] }))}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: notifSettings[item.key as keyof typeof notifSettings] ? '#FF2D55' : 'var(--text-muted)' }}>
-                      {notifSettings[item.key as keyof typeof notifSettings] ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
-                    </button>
+                    {notifSettings[item.key as keyof typeof notifSettings] && (
+                      <div style={{ display: 'flex', gap: 16, paddingLeft: 4 }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)' }}>
+                          <input type="checkbox" defaultChecked style={{ width: 13, height: 13 }} />
+                          이메일
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)' }}>
+                          <input type="checkbox" style={{ width: 13, height: 13 }} />
+                          SMS
+                        </label>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
