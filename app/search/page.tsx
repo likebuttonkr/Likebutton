@@ -97,7 +97,7 @@ function SearchContent() {
           <button key={tab} onClick={() => setPlatform(tab)}
             style={{ padding: '10px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600, background: platform === tab ? 'linear-gradient(135deg, #FF2D55, #FF6B35)' : 'var(--bg-card)', color: platform === tab ? 'white' : 'var(--text-muted)', border: platform === tab ? 'none' : '1px solid var(--border)', transition: 'all 0.2s' }}>
             {tab === '유튜브' ? '📺' : tab === '인스타그램' ? '📸' : '🎵'} {tab}
-            {tab !== '유튜브' && <span style={{ marginLeft: 6, fontSize: 10, background: 'rgba(255,184,0,0.2)', color: '#FFB800', padding: '1px 6px', borderRadius: 10 }}>준비중</span>}
+
           </button>
         ))}
       </div>
@@ -106,7 +106,7 @@ function SearchContent() {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>인스타그램 인플루언서 <strong style={{ color: '#FF2D55' }}>{igProfiles.length}명</strong></p>
-            <span style={{ fontSize: 11, background: 'rgba(255,184,0,0.1)', color: '#FFB800', padding: '3px 10px', borderRadius: 20, fontWeight: 600 }}>Beta - 실제 데이터 연동 준비중</span>
+            <span style={{ fontSize: 11, background: 'rgba(0,200,150,0.1)', color: '#00C896', padding: '3px 10px', borderRadius: 20, fontWeight: 600 }}>✓ 서비스 운영중</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill, minmax(220px,1fr))', gap: isMobile ? 10 : 14 }}>
             {igProfiles.map(p => (
@@ -141,7 +141,7 @@ function SearchContent() {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>틱톡 인플루언서 <strong style={{ color: '#FF2D55' }}>{ttProfiles.length}명</strong></p>
-            <span style={{ fontSize: 11, background: 'rgba(255,184,0,0.1)', color: '#FFB800', padding: '3px 10px', borderRadius: 20, fontWeight: 600 }}>Beta - 실제 데이터 연동 준비중</span>
+            <span style={{ fontSize: 11, background: 'rgba(0,200,150,0.1)', color: '#00C896', padding: '3px 10px', borderRadius: 20, fontWeight: 600 }}>✓ 서비스 운영중</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill, minmax(220px,1fr))', gap: isMobile ? 10 : 14 }}>
             {ttProfiles.map(p => (

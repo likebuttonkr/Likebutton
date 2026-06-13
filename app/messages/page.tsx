@@ -64,6 +64,40 @@ export default function MessagesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [allMessages, selectedChat]);
 
+  // Supabase Realtime 메시지 구독
+  useEffect(() => {
+    const channel = (async () => {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return null;
+
+      const ch = supabase
+        .channel('messages')
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${session.user.id}`,
+        }, (payload) => {
+          const msg = payload.new as any;
+          setAllMessages(prev => ({
+            ...prev,
+            [selectedChat.id]: [...(prev[selectedChat.id] || []), {
+              id: msg.id, from: 'other', text: msg.content, time: '방금'
+            }]
+          }));
+        })
+        .subscribe();
+      return ch;
+    })();
+
+    return () => { channel.then(ch => ch?.unsubscribe()); };
+  }, [selectedChat.id]);
+
   const messages = allMessages[selectedChat.id] || [];
 
   const sendMessage = () => {

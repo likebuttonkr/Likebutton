@@ -25,6 +25,22 @@ export default function LoginPage() {
     setLoading(false);
   };
 
+  const handleKakaoLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'kakao',
+      options: { redirectTo: `${window.location.origin}/mypage` }
+    });
+    if (error) alert('카카오 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.');
+  };
+
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/mypage` }
+    });
+    if (error) alert('구글 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.');
+  };
+
   return (
     <div>
       <Header />
@@ -74,8 +90,14 @@ export default function LoginPage() {
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>또는</span>
               <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
             </div>
-            <button style={{ width: '100%', padding: '12px', background: '#FEE500', color: '#000', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', marginBottom: 8 }}>카카오로 로그인</button>
-            <button style={{ width: '100%', padding: '12px', background: 'white', color: '#333', border: '1px solid #ddd', borderRadius: 10, fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Google로 로그인</button>
+            <button onClick={handleKakaoLogin}
+              style={{ width: '100%', padding: '12px', background: '#FEE500', color: '#000', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18 }}>💬</span> 카카오로 로그인
+            </button>
+            <button onClick={handleGoogleLogin}
+              style={{ width: '100%', padding: '12px', background: 'white', color: '#333', border: '1px solid #ddd', borderRadius: 10, fontWeight: 600, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18 }}>🌐</span> Google로 로그인
+            </button>
           </div>
           <p style={{ textAlign: 'center', marginTop: 18, fontSize: 14, color: 'var(--text-muted)' }}>
             계정이 없으신가요? <Link href="/signup" style={{ color: '#FF2D55', fontWeight: 700, textDecoration: 'none' }}>회원가입</Link>

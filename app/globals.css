@@ -188,3 +188,42 @@ tbody tr:hover { background: rgba(255,255,255,0.02) !important; }
   table { font-size: 12px !important; }
   th, td { padding: 8px 10px !important; }
 }
+
+/* 카드 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.3s ease; }
+
+/* 로딩 스피너 */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+/* 알림 뱃지 펄스 */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+.badge-pulse { animation: pulse 1.5s infinite; }
+
+/* 툴팁 */
+.tooltip-wrap { position: relative; }
+.tooltip-wrap:hover .tooltip-box { opacity: 1; visibility: visible; }
+.tooltip-box {
+  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85); color: white;
+  padding: 5px 10px; border-radius: 6px; font-size: 12px;
+  white-space: nowrap; opacity: 0; visibility: hidden;
+  transition: opacity 0.2s; z-index: 100; pointer-events: none;
+}
