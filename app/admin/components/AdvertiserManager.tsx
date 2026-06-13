@@ -1,4 +1,5 @@
 'use client';
+import { showToast } from '../../components/Toast';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Search } from 'lucide-react';
@@ -22,8 +23,8 @@ export default function AdvertiserManager() {
     await supabase.from('profiles').update({ approval_status: approval }).eq('id', id);
     await load();
     setSaving(null);
-    if (approval === '승인완료') alert('✅ 승인 완료 이메일이 발송되었습니다.');
-    if (approval === '승인거절') alert('❌ 거절 이메일이 발송되었습니다.');
+    if (approval === '승인완료') showToast('승인 완료 이메일이 발송되었습니다.', 'success');
+    if (approval === '승인거절') showToast('거절 이메일이 발송되었습니다.', 'error');
   };
 
   const updateStatus = async (id: string, status: string) => {

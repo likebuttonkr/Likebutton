@@ -1,4 +1,5 @@
 'use client';
+import { showToast } from '../components/Toast';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -90,7 +91,7 @@ export default function MyPage() {
     const { error } = await supabase.auth.updateUser({ password: pwForm.next });
     setPwLoading(false);
     if (error) { setPwError('현재 비밀번호가 다릅니다.'); return; }
-    alert('비밀번호가 변경되었습니다.');
+    showToast('비밀번호가 변경되었습니다.', 'success');
     setShowPasswordModal(false);
     setPwForm({ current: '', next: '', confirm: '' });
   };
@@ -861,7 +862,7 @@ function RevenueManager({ userId, isMobile }: { userId: string; isMobile: boolea
               <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>세금계산서 수신 이메일</p>
               <div style={{ display: 'flex', gap: 8 }}>
                 <input type="email" value={taxEmail} onChange={e => setTaxEmail(e.target.value)} placeholder="세금계산서 수신 이메일 주소" style={{ flex: 1, fontSize: 13, padding: '9px 12px', height: 'auto' }} />
-                <button onClick={() => alert('저장되었습니다.')} style={{ padding: '9px 16px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>저장</button>
+                <button onClick={() => showToast('저장되었습니다.', 'success')} style={{ padding: '9px 16px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>저장</button>
               </div>
             </div>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>

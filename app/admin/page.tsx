@@ -1,4 +1,5 @@
 'use client';
+import { showToast } from '../components/Toast';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { BarChart2, Users, Briefcase, MessageSquare, Tag, CreditCard, Download, Settings, Eye, EyeOff, TrendingUp, Star, FileText, ChevronDown, ChevronRight, Search } from 'lucide-react';
@@ -421,7 +422,7 @@ function SettingsPanel({ activeSub }: { activeSub: string }) {
     await supabase.from('email_history').insert({ target: emailTarget, content: emailContent });
     setEmailHistory(h => [{ target: emailTarget, content: emailContent, created_at: new Date().toISOString() }, ...h]);
     setEmailContent('');
-    alert('✅ 이메일이 발송되었습니다.');
+    showToast('이메일이 발송되었습니다.', 'success');
   };
 
   if (activeSub === '배너') return (
@@ -452,7 +453,7 @@ function SettingsPanel({ activeSub }: { activeSub: string }) {
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={() => setBanners(b => [...b, { order: b.length + 1, url: '', link: '', active: true }])}
           style={{ padding: '8px 16px', background: 'var(--bg-card2)', border: '1px solid var(--border)', color: 'var(--text)', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>+ 추가</button>
-        <button onClick={() => alert('✅ 배너 설정이 저장되었습니다.')}
+        <button onClick={() => showToast('배너 설정이 저장되었습니다.', 'success')}
           style={{ padding: '8px 18px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>설정 저장</button>
       </div>
     </div>
