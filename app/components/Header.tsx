@@ -1,9 +1,30 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import Link from 'next/link';
 import { Search, Bell, Menu, X, ChevronDown } from 'lucide-react';
 
-export default function Header({ isLoggedIn = false, userType = '' }: { isLoggedIn?: boolean; userType?: string }) {
+export default function Header({ isLoggedIn: isLoggedInProp = false, userType: userTypeProp = '' }: { isLoggedIn?: boolean; userType?: string }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(isLoggedInProp);
+  const [userType, setUserType] = useState(userTypeProp);
+
+  useEffect(() => {
+    // 실시간 로그인 상태 감지
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsLoggedIn(true);
+        supabase.from('profiles').select('user_type').eq('id', session.user.id).single()
+          .then(({ data }) => { if (data) setUserType(data.user_type || ''); });
+      } else {
+        setIsLoggedIn(false);
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
+      if (!session) setUserType('');
+    });
+    return () => subscription.unsubscribe();
+  }, []);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [influencerDropdown, setInfluencerDropdown] = useState(false);
