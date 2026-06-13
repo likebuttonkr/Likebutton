@@ -134,6 +134,7 @@ export default function RequestPage() {
       const { supabase } = await import('../../lib/supabase');
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        // 프로젝트 생성
         await supabase.from('projects').insert({
           title: form.projectName,
           advertiser_id: session.user.id,
@@ -146,6 +147,11 @@ export default function RequestPage() {
           keyword: form.keyword,
           product_info: form.productInfo,
           release_date: form.releaseDate,
+        });
+        // 이메일 발송 이력 기록 (실제 발송은 Supabase Edge Function 또는 외부 이메일 서비스 연동 필요)
+        await supabase.from('email_history').insert({
+          target: id,
+          content: `[광고 요청] ${form.projectName} - ${form.adTypes.join(', ')} / 릴리즈: ${form.releaseDate} / 예상광고비: ${totalEstimate.toLocaleString()}원`,
         });
       }
     } catch (e) {}

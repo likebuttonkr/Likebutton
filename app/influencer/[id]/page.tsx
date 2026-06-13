@@ -1,4 +1,5 @@
 'use client';
+import { showToast } from '../../components/Toast';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -19,6 +20,12 @@ const SERVICES = [
   { type: 'PPL', desc: '영상 내 자연스러운 제품/서비스 삽입 광고', price: '200만원~', days: '7일' },
   { type: '맞춤형', desc: '브랜드 요청에 따른 맞춤 제작', price: '협의', days: '협의' },
 ];
+
+function maskName(name: string): string {
+  if (!name) return '-';
+  if (name.length <= 1) return name + '*';
+  return name[0] + '*'.repeat(name.length - 1);
+}
 
 export default function InfluencerDetail() {
   const { id } = useParams<{ id: string }>();
@@ -348,6 +355,25 @@ export default function InfluencerDetail() {
                     ))}
                   </div>
                 </div>
+
+                {/* 광고 영상 영역 */}
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px' }}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>광고 영상</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 10 }}>
+                    {videos.slice(0, 3).map((v, i) => (
+                      <a key={i} href={`https://youtube.com/watch?v=${v.id}`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                        <div style={{ background: 'var(--bg-card2)', borderRadius: 10, overflow: 'hidden', border: '2px solid rgba(255,45,85,0.2)', position: 'relative' }}>
+                          <img src={v.thumbnail} alt={v.title} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover' }} />
+                          <div style={{ position: 'absolute', top: 6, left: 6, background: 'rgba(255,45,85,0.9)', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10 }}>AD</div>
+                          <div style={{ padding: '8px 10px' }}>
+                            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.4 }}>{v.title}</p>
+                            <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>조회수 {v.viewCount}</p>
+                          </div>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -450,7 +476,7 @@ export default function InfluencerDetail() {
                             {r.name[0]}
                           </div>
                           <div>
-                            <p style={{ fontWeight: 700, fontSize: 14 }}>{r.name}</p>
+                            <p style={{ fontWeight: 700, fontSize: 14 }}>{maskName(r.name)}</p>
                             <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{r.company}</p>
                           </div>
                         </div>
