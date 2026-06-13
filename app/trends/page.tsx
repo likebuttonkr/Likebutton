@@ -91,13 +91,34 @@ export default function TrendsPage() {
         </div>
 
         {/* 플랫폼 탭 */}
-        <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 4, width: 'fit-content' }}>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 4, width: 'fit-content' }}>
           {(['유튜브', '인스타그램', '틱톡'] as const).map(p => (
             <button key={p} onClick={() => setPlatform(p)}
               style={{ padding: '9px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: platform === p ? 700 : 500, background: platform === p ? 'linear-gradient(135deg,#FF2D55,#FF6B35)' : 'transparent', color: platform === p ? 'white' : 'var(--text-muted)', transition: 'all 0.2s' }}>
               {p === '유튜브' ? '📺' : p === '인스타그램' ? '📸' : '🎵'} {p}
             </button>
           ))}
+        </div>
+
+        {/* 카테고리 필터 + 정렬 */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
+          <select style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+            <option>대분류명 ▼</option>
+            {['뷰티/패션', '음식/요리', '게임', '여행', '운동', 'IT/테크', '교육', '라이프스타일'].map(c => <option key={c}>{c}</option>)}
+          </select>
+          <select style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+            <option>중분류명 ▼</option>
+            {['뷰티', '패션', '스킨케어', '헤어'].map(c => <option key={c}>{c}</option>)}
+          </select>
+          <select style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+            <option>소분류명 ▼</option>
+            {['메이크업', '립스틱', '파운데이션', '아이섀도우'].map(c => <option key={c}>{c}</option>)}
+          </select>
+          <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+            <select style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+              {['좋아요 많은순', '조회수 많은순', '최신순', '구독자수 많은순'].map(s => <option key={s}>{s}</option>)}
+            </select>
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 20, marginBottom: 24 }}>
@@ -119,9 +140,14 @@ export default function TrendsPage() {
                     </div>
                     <img src={item.thumbnail} alt="" style={{ width: isMobile ? 56 : 70, height: isMobile ? 36 : 44, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.3, marginBottom: 2 }}>{item.title}</p>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{item.channelTitle}</span>
+                      <p style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.3, marginBottom: 4 }}>{item.title}</p>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'white', flexShrink: 0 }}>
+                            {(item.channelTitle || '?')[0]}
+                          </div>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{item.channelTitle}</span>
+                        </div>
                         <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 2 }}><Play size={8} />{item.viewCount}</span>
                       </div>
                     </div>

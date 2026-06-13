@@ -154,6 +154,29 @@ export default function InstagramDetailPage() {
                 <p style={{ fontSize: 12, color: '#00C896', marginTop: 8, fontWeight: 600 }}>✓ 업계 평균 대비 높음</p>
               </div>
             </div>
+            {/* 시청자 지역 분포 */}
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px' }}>
+              <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>시청자 지역</h3>
+              {[
+                { country: '🇰🇷 대한민국', pct: 85.21 },
+                { country: '🇺🇸 미국', pct: 4.32 },
+                { country: '🇯🇵 일본', pct: 3.15 },
+                { country: '🇨🇳 중국', pct: 2.18 },
+                { country: '🌏 기타', pct: 5.14 },
+              ].map(item => (
+                <div key={item.country} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: 13 }}>{item.country}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '50%' }}>
+                    <div style={{ flex: 1, height: 6, background: 'var(--border)', borderRadius: 3 }}>
+                      <div style={{ width: `${item.pct}%`, height: '100%', background: 'linear-gradient(90deg,#FF2D55,#FF6B35)', borderRadius: 3 }} />
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#FF2D55', minWidth: 44, textAlign: 'right' }}>{item.pct}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

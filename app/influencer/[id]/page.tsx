@@ -294,6 +294,28 @@ export default function InfluencerDetail() {
                     <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>* 예상 데이터 기준</p>
                   </div>
                 </div>
+
+                {/* 시청자 지역 */}
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px', marginTop: 14 }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>시청자 지역</h3>
+                  {[
+                    { country: '🇰🇷 대한민국', pct: 82.4 },
+                    { country: '🇺🇸 미국', pct: 5.1 },
+                    { country: '🇯🇵 일본', pct: 3.8 },
+                    { country: '🇨🇳 중국', pct: 2.5 },
+                    { country: '🌏 기타', pct: 6.2 },
+                  ].map(item => (
+                    <div key={item.country} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                      <span style={{ fontSize: 13, minWidth: 120 }}>{item.country}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                        <div style={{ flex: 1, height: 6, background: 'var(--border)', borderRadius: 3 }}>
+                          <div style={{ width: `${item.pct}%`, height: '100%', background: 'linear-gradient(90deg,#FF2D55,#FF6B35)', borderRadius: 3 }} />
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#FF2D55', minWidth: 44, textAlign: 'right' }}>{item.pct}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
