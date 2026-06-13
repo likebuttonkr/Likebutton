@@ -52,6 +52,32 @@ function SearchContent() {
   const [ttProfiles, setTtProfiles] = useState<TikTokProfile[]>(TIKTOK_MOCK_PROFILES);
   const [loading, setLoading] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [autoCompleteList, setAutoCompleteList] = useState<string[]>([]);
+  const [showAutoComplete, setShowAutoComplete] = useState(false);
+
+  const CATEGORY_KEYWORDS = [
+    '뷰티', '메이크업', '스킨케어', '헤어', '네일',
+    '게임', 'FPS게임', '모바일게임', 'RPG',
+    '음식', '먹방', '요리', '베이킹', '카페',
+    '여행', '해외여행', '국내여행', '캠핑',
+    '운동', '헬스', '요가', '필라테스', '러닝',
+    'IT', '테크', '스마트폰', '노트북', '앱리뷰',
+    '패션', '코디', '하울', '명품',
+    '교육', '영어', '자격증', '독서',
+    '라이프스타일', '육아', '반려동물', '인테리어',
+    '엔터', '음악', '댄스', '영화', '드라마',
+  ];
+
+  const handleSearchInput = (val: string) => {
+    setQuery(val);
+    if (val.length > 0) {
+      const filtered = CATEGORY_KEYWORDS.filter(k => k.includes(val)).slice(0, 6);
+      setAutoCompleteList(filtered);
+      setShowAutoComplete(filtered.length > 0);
+    } else {
+      setShowAutoComplete(false);
+    }
+  };
   const [sortBy, setSortBy] = useState('구독자수 많은순');
   const [sortOpen, setSortOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');

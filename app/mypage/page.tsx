@@ -99,17 +99,35 @@ export default function MyPage() {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('파일 크기는 5MB 이하여야 합니다.', 'error'); return; }
     setUploadingAvatar(true);
-    // 파일을 base64로 변환해서 미리보기
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const dataUrl = ev.target?.result as string;
-      setAvatarUrl(dataUrl);
-      // Supabase에 avatar_url 업데이트
-      await supabase.from('profiles').update({ avatar_url: dataUrl }).eq('id', user.id);
+    try {
+      const ext = file.name.split('.').pop();
+      const filePath = `${user.id}/avatar.${ext}`;
+      // Supabase Storage 업로드
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      // 공개 URL 가져오기
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const publicUrl = data.publicUrl + '?t=' + Date.now();
+      setAvatarUrl(publicUrl);
+      await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
+      showToast('프로필 이미지가 변경되었습니다.', 'success');
+    } catch (err) {
+      // Storage 실패 시 base64 fallback
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const dataUrl = ev.target?.result as string;
+        setAvatarUrl(dataUrl);
+        await supabase.from('profiles').update({ avatar_url: dataUrl }).eq('id', user.id);
+        showToast('프로필 이미지가 변경되었습니다.', 'success');
+      };
+      reader.readAsDataURL(file);
+    } finally {
       setUploadingAvatar(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleSaveProfile = async () => {

@@ -21,6 +21,16 @@ export default function AdvertiserManager() {
   const updateApproval = async (id: string, approval: string) => {
     setSaving(Number(id));
     await supabase.from('profiles').update({ approval_status: approval }).eq('id', id);
+    // 이메일 발송 이력 기록
+    const user = list.find(u => u.id === id);
+    if (user?.email) {
+      await supabase.from('email_history').insert({
+        target: user.email,
+        content: approval === '승인완료'
+          ? `[라이크버튼] 광고주 가입 승인 완료\n\n안녕하세요 ${user.name || user.email}님,\n라이크버튼 광고주 가입이 승인되었습니다.\n지금 바로 인플루언서를 찾아보세요!`
+          : `[라이크버튼] 광고주 가입 승인 거절\n\n안녕하세요 ${user.name || user.email}님,\n아쉽게도 광고주 가입이 거절되었습니다.\n문의사항은 고객센터로 연락해주세요.`,
+      });
+    }
     await load();
     setSaving(null);
     if (approval === '승인완료') showToast('승인 완료 이메일이 발송되었습니다.', 'success');
