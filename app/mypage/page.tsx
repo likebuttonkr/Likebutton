@@ -498,28 +498,25 @@ export default function MyPage() {
           {/* 수익 관리 */}
           {activeMenu === 'revenue' && isInfluencer && (
             <div>
+              {/* 수익금 요약 */}
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 14, marginBottom: 16 }}>
-                {[{ label: '출금 가능 수익금', value: '0원', color: '#FF2D55' }, { label: '예상 수익금', value: '0원', color: '#FFB800' }, { label: '출금 완료 수익금', value: '0원', color: '#00C896' }].map(s => (
+                {[
+                  { label: '출금 가능 수익금', value: '0원', color: '#FF2D55', icon: '💳' },
+                  { label: '예상 수익금', value: '0원', color: '#FFB800', icon: '⏳' },
+                  { label: '출금 완료 수익금', value: '0원', color: '#00C896', icon: '✅' },
+                ].map(s => (
                   <div key={s.label} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px' }}>
-                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{s.label}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: 18 }}>{s.icon}</span>
+                      <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{s.label}</p>
+                    </div>
                     <p style={{ fontSize: 22, fontWeight: 900, color: s.color }}>{s.value}</p>
                   </div>
                 ))}
               </div>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-                  <p style={{ fontSize: 36, marginBottom: 12 }}>💰</p>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>아직 수익 내역이 없어요</p>
-                  <p style={{ fontSize: 13, marginTop: 6 }}>광고 진행 후 수익이 발생하면 여기서 확인할 수 있어요</p>
-                </div>
-                <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
-                  <p style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>출금 계좌 정보</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 10, marginBottom: 10 }}>
-                    {['은행 선택', '계좌번호', '예금주명'].map(p => <input key={p} placeholder={p} style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} />)}
-                  </div>
-                  <button style={{ padding: '8px 20px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>출금 신청</button>
-                </div>
-              </div>
+
+              {/* 탭: 수익내역 / 출금내역 / 세금계산서 */}
+              <RevenueManager userId={user?.id} isMobile={isMobile} />
             </div>
           )}
 
@@ -691,6 +688,124 @@ export default function MyPage() {
         </main>
       </div>
       <Footer />
+    </div>
+  );
+}
+
+// 수익 관리 컴포넌트
+function RevenueManager({ userId, isMobile }: { userId: string; isMobile: boolean }) {
+  const [revenueTab, setRevenueTab] = useState<'revenue'|'withdrawal'|'tax'>('revenue');
+  const [withdrawalForm, setWithdrawalForm] = useState({ bank: '', account: '', holder: '', amount: '' });
+  const [taxEmail, setTaxEmail] = useState('');
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+
+  const BANKS = ['국민은행', '신한은행', '우리은행', 'IBK기업은행', 'KEB하나은행', '농협', '카카오뱅크', '토스뱅크'];
+
+  const submitWithdrawal = async () => {
+    if (!withdrawalForm.bank || !withdrawalForm.account || !withdrawalForm.holder || !withdrawalForm.amount) {
+      alert('모든 항목을 입력해주세요.'); return;
+    }
+    const { supabase } = await import('../lib/supabase');
+    await supabase.from('withdrawals').insert({
+      influencer_id: userId,
+      bank_name: withdrawalForm.bank,
+      account_number: withdrawalForm.account,
+      account_holder: withdrawalForm.holder,
+      amount: parseInt(withdrawalForm.amount.replace(/[^0-9]/g, '')),
+      status: '출금 신청',
+    });
+    alert('출금 신청이 완료되었습니다.');
+    setWithdrawalForm({ bank: '', account: '', holder: '', amount: '' });
+  };
+
+  return (
+    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+      {/* 탭 */}
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
+        {[['revenue','수익 내역'], ['withdrawal','출금 내역'], ['tax','월별 세금계산서']].map(([val, label]) => (
+          <button key={val} onClick={() => setRevenueTab(val as any)}
+            style={{ flex: 1, padding: '14px', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: revenueTab === val ? 700 : 500, background: 'transparent', color: revenueTab === val ? '#FF2D55' : 'var(--text-muted)', borderBottom: revenueTab === val ? '2px solid #FF2D55' : '2px solid transparent' }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ padding: '24px' }}>
+        {/* 수익 내역 */}
+        {revenueTab === 'revenue' && (
+          <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: 36, marginBottom: 12 }}>💰</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>아직 수익 내역이 없어요</p>
+            <p style={{ fontSize: 13 }}>광고 진행 후 수익이 발생하면 여기서 확인할 수 있어요</p>
+          </div>
+        )}
+
+        {/* 출금 신청 */}
+        {revenueTab === 'withdrawal' && (
+          <div>
+            <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px', marginBottom: 20 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>출금 신청</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 12 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>은행</label>
+                  <select value={withdrawalForm.bank} onChange={e => setWithdrawalForm(f => ({...f, bank: e.target.value}))}
+                    style={{ width: '100%', padding: '9px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: withdrawalForm.bank ? 'var(--text)' : 'var(--text-muted)', fontSize: 13, cursor: 'pointer' }}>
+                    <option value="">은행 선택</option>
+                    {BANKS.map(b => <option key={b}>{b}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>계좌번호</label>
+                  <input value={withdrawalForm.account} onChange={e => setWithdrawalForm(f => ({...f, account: e.target.value}))} placeholder="- 없이 숫자만 입력" style={{ fontSize: 13, padding: '9px 12px', height: 'auto' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>예금주명</label>
+                  <input value={withdrawalForm.holder} onChange={e => setWithdrawalForm(f => ({...f, holder: e.target.value}))} placeholder="예금주명 입력" style={{ fontSize: 13, padding: '9px 12px', height: 'auto' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>출금 신청 금액</label>
+                  <input value={withdrawalForm.amount} onChange={e => setWithdrawalForm(f => ({...f, amount: e.target.value}))} placeholder="예: 100000" type="number" style={{ fontSize: 13, padding: '9px 12px', height: 'auto' }} />
+                </div>
+              </div>
+              <button onClick={submitWithdrawal}
+                style={{ padding: '9px 20px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>출금 신청</button>
+            </div>
+            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
+              <p style={{ fontSize: 13 }}>출금 내역이 없어요</p>
+            </div>
+          </div>
+        )}
+
+        {/* 세금계산서 */}
+        {revenueTab === 'tax' && (
+          <div>
+            <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px', marginBottom: 20 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>세금계산서 수신 이메일</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input type="email" value={taxEmail} onChange={e => setTaxEmail(e.target.value)} placeholder="세금계산서 수신 이메일 주소" style={{ flex: 1, fontSize: 13, padding: '9px 12px', height: 'auto' }} />
+                <button onClick={() => alert('저장되었습니다.')} style={{ padding: '9px 16px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>저장</button>
+              </div>
+            </div>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ background: 'var(--bg-card2)', borderBottom: '1px solid var(--border)' }}>
+                    {['연월', '광고금액', '수익금', '쿠폰 사용', '수수료', '세금계산서 발행금액', '다운로드'].map(h =>
+                      <th key={h} style={{ padding: '10px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{h}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colSpan={7} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <p style={{ fontSize: 13 }}>발행된 세금계산서가 없어요</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
