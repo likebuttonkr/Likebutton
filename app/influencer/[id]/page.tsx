@@ -27,7 +27,7 @@ export default function InfluencerDetail() {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
-  const [tab, setTab] = useState<'videos' | 'audience' | 'service' | 'reviews'>('videos');
+  const [tab, setTab] = useState<'videos' | 'audience' | 'service_desc' | 'pricing' | 'process' | 'reviews'>('videos');
   const [audiencePeriod, setAudiencePeriod] = useState<'1주일' | '1개월' | '3개월' | '1년'>('1개월');
   const [isMobile, setIsMobile] = useState(false);
 
@@ -148,9 +148,9 @@ export default function InfluencerDetail() {
           <div>
             {/* Tab nav */}
             <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 4 }}>
-              {[['videos', '최근 영상'], ['audience', '시청자층 분석'], ['service', '광고 서비스'], ['reviews', '리뷰']].map(([val, label]) => (
+              {[['videos', '최근 영상'], ['audience', '시청자층 분석'], ['service_desc', '서비스 설명'], ['pricing', '가격 정보'], ['process', '과정 소개'], ['reviews', '리뷰']].map(([val, label]) => (
                 <button key={val} onClick={() => setTab(val as any)}
-                  style={{ flex: 1, padding: '8px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: tab === val ? 700 : 500, background: tab === val ? 'var(--bg-card2)' : 'transparent', color: tab === val ? 'var(--text)' : 'var(--text-muted)', transition: 'all 0.2s' }}>
+                  style={{ flex: 1, padding: '7px 4px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: tab === val ? 700 : 500, background: tab === val ? 'var(--bg-card2)' : 'transparent', color: tab === val ? 'var(--text)' : 'var(--text-muted)', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
                   {label}
                 </button>
               ))}
@@ -297,42 +297,163 @@ export default function InfluencerDetail() {
               </div>
             )}
 
-            {tab === 'service' && (
+            {/* 서비스 설명 탭 */}
+            {tab === 'service_desc' && (
+              <div>
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px', marginBottom: 16 }}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>서비스 설명</h3>
+                  <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.8 }}>
+                    안녕하세요! 유튜브 크리에이터입니다.<br/><br/>
+                    브랜디드 콘텐츠, PPL, 맞춤형 광고 모두 진행 가능합니다.<br/>
+                    구독자분들과의 높은 신뢰를 바탕으로 자연스럽게 제품을 소개하는 방식으로 진행합니다.<br/><br/>
+                    광고 진행 전 충분한 미팅을 통해 브랜드의 메시지를 정확히 파악하고, 채널 특성에 맞는 최적의 콘텐츠를 제작해드립니다.
+                  </p>
+                </div>
+                {/* 인기 영상 */}
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px', marginBottom: 16 }}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>인기 영상</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 10 }}>
+                    {videos.slice(0, 3).map(v => (
+                      <a key={v.id} href={`https://youtube.com/watch?v=${v.id}`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                        <div style={{ background: 'var(--bg-card2)', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                          <img src={v.thumbnail} alt={v.title} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover' }} />
+                          <div style={{ padding: '8px 10px' }}>
+                            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.4, marginBottom: 4 }}>{v.title}</p>
+                            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>조회수 {v.viewCount}</p>
+                          </div>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 가격 정보 탭 */}
+            {tab === 'pricing' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {SERVICES.map(s => (
-                  <div key={s.type} className="card" style={{ padding: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                  <div key={s.type} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
                       <div>
-                        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{s.type}</h3>
-                        <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{s.desc}</p>
+                        <h3 style={{ fontWeight: 800, fontSize: 17, marginBottom: 4 }}>{s.type}</h3>
+                        <p style={{ fontSize: 20, fontWeight: 900, color: '#FF2D55' }}>{s.price}</p>
                       </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 16 }}>
-                        <div style={{ fontSize: 18, fontWeight: 900, color: '#FF2D55' }}>{s.price}</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>작업 {s.days}</div>
+                      <span style={{ fontSize: 12, background: 'rgba(255,45,85,0.08)', color: '#FF2D55', padding: '4px 12px', borderRadius: 20, fontWeight: 600 }}>작업 {s.days}</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                      <div style={{ background: 'var(--bg-card2)', borderRadius: 10, padding: '12px' }}>
+                        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 6 }}>설명</p>
+                        <p style={{ fontSize: 13, lineHeight: 1.5 }}>{s.desc}</p>
+                      </div>
+                      <div style={{ background: 'var(--bg-card2)', borderRadius: 10, padding: '12px' }}>
+                        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 6 }}>예상 성과</p>
+                        <p style={{ fontSize: 13, lineHeight: 1.5 }}>조회수 10만+ 기대, 브랜드 노출 극대화, 전환율 향상</p>
                       </div>
                     </div>
+                    <Link href={`/request/${channel?.id}`}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '11px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700 }}>
+                      {s.type} 광고 요청하기
+                    </Link>
                   </div>
                 ))}
               </div>
             )}
 
-            {tab === 'reviews' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {REVIEWS.map((r, i) => (
-                  <div key={i} className="card" style={{ padding: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                      <div>
-                        <p style={{ fontWeight: 600, fontSize: 14 }}>{r.name}</p>
-                        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{r.company}</p>
+            {/* 과정 소개 탭 */}
+            {tab === 'process' && (
+              <div>
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px', marginBottom: 16 }}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 20 }}>광고 진행 과정</h3>
+                  {[
+                    { step: 1, title: '광고 요청', desc: '광고주가 광고 요청서를 작성하여 인플루언서에게 전달합니다.', icon: '📝', time: '1일' },
+                    { step: 2, title: '계약 및 입금', desc: '양측 계약서 작성 후 광고비를 안전결제로 입금합니다.', icon: '✍️', time: '1~2일' },
+                    { step: 3, title: '광고 기획안 작성', desc: '인플루언서가 기획안을 작성하고 광고주 확인 후 확정합니다.', icon: '📋', time: '3~5일' },
+                    { step: 4, title: '영상 촬영 및 편집', desc: '확정된 기획안을 바탕으로 영상을 촬영하고 편집합니다.', icon: '🎬', time: '7~14일' },
+                    { step: 5, title: '영상 피드백', desc: '편집 영상을 광고주에게 공유하고 피드백을 반영합니다.', icon: '🔍', time: '2~3일' },
+                    { step: 6, title: '광고 게시', desc: '최종 확정된 영상을 채널에 업로드하고 광고를 진행합니다.', icon: '📢', time: '1일' },
+                    { step: 7, title: '광고 완료', desc: '광고 진행 확정 후 정산이 완료됩니다.', icon: '✅', time: '정산 후 3일' },
+                  ].map((item, i) => (
+                    <div key={item.step} style={{ display: 'flex', gap: 14, marginBottom: i < 6 ? 20 : 0 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{item.icon}</div>
+                        {i < 6 && <div style={{ width: 2, flex: 1, background: 'var(--border)', marginTop: 4, minHeight: 24 }} />}
                       </div>
-                      <div style={{ display: 'flex', gap: 2 }}>
-                        {[1,2,3,4,5].map(s => <Star key={s} size={13} fill={s <= r.rating ? '#FFB800' : 'none'} color="#FFB800" />)}
+                      <div style={{ paddingBottom: i < 6 ? 8 : 0 }}>
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 4 }}>
+                          <p style={{ fontSize: 14, fontWeight: 700 }}>STEP {item.step}. {item.title}</p>
+                          <span style={{ fontSize: 11, background: 'var(--bg-card2)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: 20 }}>{item.time}</span>
+                        </div>
+                        <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>{item.desc}</p>
                       </div>
                     </div>
-                    <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>{r.text}</p>
-                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>{r.date}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 리뷰 탭 */}
+            {tab === 'reviews' && (
+              <div>
+                {/* 평점 요약 */}
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px', marginBottom: 16, display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontSize: 48, fontWeight: 900, color: '#FFB800', lineHeight: 1 }}>{channel?.rating}</p>
+                    <div style={{ display: 'flex', gap: 2, justifyContent: 'center', margin: '6px 0' }}>
+                      {[1,2,3,4,5].map(s => <Star key={s} size={16} fill={s <= Math.floor(parseFloat(String(channel?.rating || '0'))) ? '#FFB800' : 'none'} color="#FFB800" />)}
+                    </div>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{channel?.reviewCount}개 리뷰</p>
                   </div>
-                ))}
+                  <div style={{ flex: 1, minWidth: 160 }}>
+                    {[[5,75],[4,18],[3,5],[2,1],[1,1]].map(([star, pct]) => (
+                      <div key={star} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 16 }}>{star}</span>
+                        <Star size={11} fill="#FFB800" color="#FFB800" />
+                        <div style={{ flex: 1, height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+                          <div style={{ width: `${pct}%`, height: '100%', background: '#FFB800', borderRadius: 3 }} />
+                        </div>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 28 }}>{pct}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 리뷰 목록 */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {REVIEWS.map((r, i) => (
+                    <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '18px 20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#5B8DEF,#8B5CF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'white', flexShrink: 0 }}>
+                            {r.name[0]}
+                          </div>
+                          <div>
+                            <p style={{ fontWeight: 700, fontSize: 14 }}>{r.name}</p>
+                            <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{r.company}</p>
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ display: 'flex', gap: 2, justifyContent: 'flex-end', marginBottom: 2 }}>
+                            {[1,2,3,4,5].map(s => <Star key={s} size={12} fill={s <= r.rating ? '#FFB800' : 'none'} color="#FFB800" />)}
+                          </div>
+                          <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'right' }}>{r.date}</p>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.7 }}>{r.text}</p>
+                      {/* 인플루언서 답글 */}
+                      {i === 0 && (
+                        <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)', display: 'flex', gap: 10 }}>
+                          <img src={channel?.thumbnail} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                          <div style={{ background: 'var(--bg-card2)', borderRadius: 10, padding: '10px 14px', flex: 1 }}>
+                            <p style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{channel?.title} <span style={{ fontSize: 11, color: '#FF2D55', fontWeight: 600 }}>인플루언서</span></p>
+                            <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>감사합니다! 함께 진행하게 되어 영광이었습니다. 다음에도 꼭 함께 해요 😊</p>
+                            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>1시간 전</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
