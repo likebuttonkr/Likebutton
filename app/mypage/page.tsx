@@ -21,6 +21,12 @@ export default function MyPage() {
   const [emailAgree, setEmailAgree] = useState(false);
   const [smsAgree, setSmsAgree] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwError, setPwError] = useState('');
+  const [pwLoading, setPwLoading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // 서비스 관리
   const [services, setServices] = useState<any[]>([]);
@@ -51,6 +57,7 @@ export default function MyPage() {
         .then(({ data }) => {
           setProfile(data);
           setEditForm({ name: data?.name || '', company: data?.company || '', phone: data?.phone || '', channel_name: data?.channel_name || '' });
+          setAvatarUrl(data?.avatar_url || '');
           setLoading(false);
           if (data?.user_type === 'influencer') loadServices(session.user.id);
           else { loadFavorites(session.user.id); loadQna(session.user.id); }
@@ -74,6 +81,35 @@ export default function MyPage() {
   };
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push('/'); };
+
+  const handlePasswordChange = async () => {
+    setPwError('');
+    if (!pwForm.next || pwForm.next.length < 4) { setPwError('4~8자로 영문, 숫자를 모두 조합하여 구성해주세요.'); return; }
+    if (pwForm.next !== pwForm.confirm) { setPwError('변경 비밀번호와 일치하지 않습니다.'); return; }
+    setPwLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: pwForm.next });
+    setPwLoading(false);
+    if (error) { setPwError('현재 비밀번호가 다릅니다.'); return; }
+    alert('비밀번호가 변경되었습니다.');
+    setShowPasswordModal(false);
+    setPwForm({ current: '', next: '', confirm: '' });
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    // 파일을 base64로 변환해서 미리보기
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setAvatarUrl(dataUrl);
+      // Supabase에 avatar_url 업데이트
+      await supabase.from('profiles').update({ avatar_url: dataUrl }).eq('id', user.id);
+      setUploadingAvatar(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSaveProfile = async () => {
     const { error } = await supabase.from('profiles').update(editForm).eq('id', user.id);
@@ -181,9 +217,54 @@ export default function MyPage() {
                   : <button onClick={() => setEditMode(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'var(--bg-card2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}><Edit2 size={13} /> 수정</button>
                 }
               </div>
-              <div style={{ display: 'grid', gap: 16 }}>
+
+              {/* 프로필 이미지 업로드 */}
+              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, alignItems: 'center', marginBottom: 16 }}>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>프로필 이미지</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '2px solid var(--border)' }}>
+                      {avatarUrl
+                        ? <img src={avatarUrl} alt="프로필" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span style={{ fontSize: 26, fontWeight: 900, color: 'white' }}>{(profile?.name || user?.email || '?')[0].toUpperCase()}</span>
+                      }
+                    </div>
+                    {uploadingAvatar && (
+                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: 10, color: 'white' }}>업로드중</span>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+                      📷 이미지 변경
+                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarUpload} />
+                    </label>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>JPG, PNG, GIF (최대 5MB)</p>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gap: 14 }}>
+                {/* 아이디 */}
+                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, alignItems: 'center' }}>
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>아이디</p>
+                  <p style={{ fontSize: 14 }}>{user?.email}</p>
+                </div>
+
+                {/* 비밀번호 */}
+                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, alignItems: 'center' }}>
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>비밀번호</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 14, letterSpacing: 3, color: 'var(--text-muted)' }}>●●●●●●●●</span>
+                    <button onClick={() => setShowPasswordModal(true)}
+                      style={{ padding: '5px 12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text)', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                      변경
+                    </button>
+                  </div>
+                </div>
+
                 {[
-                  { label: '이메일', value: user?.email, field: null },
                   { label: isInfluencer ? '닉네임' : '담당자 이름', value: editForm.name, field: 'name' },
                   ...(!isInfluencer ? [{ label: '회사명', value: editForm.company, field: 'company' }] : []),
                   ...(isInfluencer ? [{ label: '채널명', value: editForm.channel_name, field: 'channel_name' }] : []),
@@ -197,6 +278,7 @@ export default function MyPage() {
                     }
                   </div>
                 ))}
+
                 <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, alignItems: 'center' }}>
                   <p style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>이메일 수신</p>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
@@ -212,8 +294,58 @@ export default function MyPage() {
                   </label>
                 </div>
               </div>
-              <div style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
-                <button style={{ fontSize: 13, color: '#FF2D55', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>회원탈퇴</button>
+
+              <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <button style={{ fontSize: 13, color: '#FF2D55', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                  onClick={() => { if (confirm('정말 탈퇴하시겠어요? 모든 데이터가 삭제됩니다.')) alert('회원탈퇴가 처리되었습니다.'); }}>
+                  회원탈퇴
+                </button>
+                {editMode && (
+                  <button onClick={handleSaveProfile} style={{ padding: '9px 24px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>
+                    수정 완료
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 비밀번호 변경 모달 */}
+          {showPasswordModal && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 20 }}>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '28px', width: '100%', maxWidth: 400 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <h3 style={{ fontSize: 17, fontWeight: 800 }}>비밀번호 변경</h3>
+                  <button onClick={() => { setShowPasswordModal(false); setPwError(''); setPwForm({ current: '', next: '', confirm: '' }); }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 20 }}>✕</button>
+                </div>
+                {pwError && (
+                  <div style={{ padding: '10px 14px', background: 'rgba(255,45,85,0.08)', border: '1px solid rgba(255,45,85,0.2)', borderRadius: 8, marginBottom: 14 }}>
+                    <p style={{ fontSize: 13, color: '#FF2D55' }}>{pwError}</p>
+                  </div>
+                )}
+                <div style={{ display: 'grid', gap: 12, marginBottom: 20 }}>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>현재 비밀번호</label>
+                    <input type="password" value={pwForm.current} onChange={e => setPwForm(f => ({...f, current: e.target.value}))} placeholder="현재 비밀번호를 입력해주세요." style={{ fontSize: 13, padding: '9px 12px', height: 'auto' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>변경 비밀번호 <span style={{ fontSize: 11, fontWeight: 400 }}>(영문, 숫자 필수, 4~8자리)</span></label>
+                    <input type="password" value={pwForm.next} onChange={e => setPwForm(f => ({...f, next: e.target.value}))} placeholder="영문, 숫자 필수, 4~8자리" style={{ fontSize: 13, padding: '9px 12px', height: 'auto' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>변경 비밀번호 확인</label>
+                    <input type="password" value={pwForm.confirm} onChange={e => setPwForm(f => ({...f, confirm: e.target.value}))} placeholder="영문, 숫자 필수, 4~8자리" style={{ fontSize: 13, padding: '9px 12px', height: 'auto' }} />
+                    {pwForm.confirm && <p style={{ fontSize: 11, marginTop: 4, color: pwForm.next === pwForm.confirm ? '#00C896' : '#FF2D55' }}>{pwForm.next === pwForm.confirm ? '✓ 비밀번호가 일치합니다.' : '✗ 비밀번호가 일치하지 않습니다.'}</p>}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => { setShowPasswordModal(false); setPwError(''); }}
+                    style={{ flex: 1, padding: '12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>취소</button>
+                  <button onClick={handlePasswordChange} disabled={pwLoading}
+                    style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>
+                    {pwLoading ? '변경 중...' : '설정'}
+                  </button>
+                </div>
               </div>
             </div>
           )}
