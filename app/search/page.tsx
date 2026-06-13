@@ -110,11 +110,11 @@ function SearchContent() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill, minmax(220px,1fr))', gap: isMobile ? 10 : 14 }}>
             {igProfiles.map(p => (
-              <div key={p.id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 16 }}>
+              <Link key={p.id} href={`/influencer/instagram/${p.id}`} style={{ textDecoration: 'none', display: 'block', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 16 }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
                   <img src={p.avatar_url} alt={p.display_name} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.display_name}</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text)' }}>{p.display_name}</p>
                     <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>@{p.username}</p>
                   </div>
                 </div>
@@ -122,7 +122,7 @@ function SearchContent() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
                   <div>
                     <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>팔로워</p>
-                    <p style={{ fontSize: 13, fontWeight: 700 }}>{p.followersFormatted}</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{p.followersFormatted}</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>최소광고비</p>
@@ -133,7 +133,7 @@ function SearchContent() {
                   <span style={{ fontSize: 10, background: 'rgba(255,45,85,0.1)', color: '#FF2D55', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>📸 인스타그램</span>
                   <span style={{ fontSize: 10, background: 'var(--bg-card2)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: 20 }}>{p.category}</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -145,11 +145,11 @@ function SearchContent() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill, minmax(220px,1fr))', gap: isMobile ? 10 : 14 }}>
             {ttProfiles.map(p => (
-              <div key={p.id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 16 }}>
+              <Link key={p.id} href={`/influencer/tiktok/${p.id}`} style={{ textDecoration: 'none', display: 'block', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 16 }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
                   <img src={p.avatar_url} alt={p.display_name} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.display_name}</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text)' }}>{p.display_name}</p>
                     <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>@{p.username}</p>
                   </div>
                 </div>
@@ -157,7 +157,7 @@ function SearchContent() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
                   <div>
                     <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>팔로워</p>
-                    <p style={{ fontSize: 13, fontWeight: 700 }}>{p.followersFormatted}</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{p.followersFormatted}</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>최소광고비</p>
@@ -168,7 +168,7 @@ function SearchContent() {
                   <span style={{ fontSize: 10, background: 'rgba(0,0,0,0.3)', color: 'white', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>🎵 틱톡</span>
                   <span style={{ fontSize: 10, background: 'var(--bg-card2)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: 20 }}>{p.category}</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
