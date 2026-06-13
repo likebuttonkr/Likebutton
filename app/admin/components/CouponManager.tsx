@@ -14,7 +14,7 @@ export default function CouponManager() {
     setCoupons(data || []);
   };
   const save = async () => {
-    if (!form.name || !form.discount_value) { alert('쿠폰명과 할인 금액/율을 입력해주세요.'); return; }
+    if (!form.name || !form.discount_value) { showToast('쿠폰명과 할인 금액/율을 입력해주세요.', 'warning'); return; }
     await supabase.from('coupons').insert({ ...form, discount_value: parseInt(form.discount_value), status: '발급전' });
     setForm({ name: '', target: '전체', discount_type: '정액식', discount_value: '', start_date: '', end_date: '' });
     load();

@@ -63,8 +63,8 @@ export default function CSPage() {
   };
 
   const submitQna = async () => {
-    if (!user) { alert('로그인 후 이용해주세요.'); return; }
-    if (!qnaForm.title || !qnaForm.content) { alert('제목과 내용을 입력해주세요.'); return; }
+    if (!user) { showToast('로그인 후 이용해주세요.', 'info'); return; }
+    if (!qnaForm.title || !qnaForm.content) { showToast('제목과 내용을 입력해주세요.', 'warning'); return; }
     setQnaLoading(true);
     await supabase.from('qna').insert({ ...qnaForm, user_id: user.id });
     await loadQna(user.id);
@@ -210,7 +210,7 @@ export default function CSPage() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>내 문의 내역</p>
-              <button onClick={() => { if (!user) { alert('로그인 후 이용해주세요.'); return; } setShowQnaForm(!showQnaForm); }}
+              <button onClick={() => { if (!user) { showToast('로그인 후 이용해주세요.', 'info'); return; } setShowQnaForm(!showQnaForm); }}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
                 <Plus size={14} /> Q&A 등록
               </button>

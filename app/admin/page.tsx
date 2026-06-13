@@ -418,7 +418,7 @@ function SettingsPanel({ activeSub }: { activeSub: string }) {
   const [emailHistory, setEmailHistory] = useState<any[]>([]);
 
   const sendEmail = async () => {
-    if (!emailContent) { alert('내용을 입력해주세요.'); return; }
+    if (!emailContent) { showToast('내용을 입력해주세요.', 'warning'); return; }
     await supabase.from('email_history').insert({ target: emailTarget, content: emailContent });
     setEmailHistory(h => [{ target: emailTarget, content: emailContent, created_at: new Date().toISOString() }, ...h]);
     setEmailContent('');

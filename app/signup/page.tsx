@@ -1,4 +1,5 @@
 'use client';
+import { showToast } from '../components/Toast';
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -85,7 +86,7 @@ function SignupContent() {
   };
 
   const sendBizEmailVerification = async () => {
-    if (!bizEmail) { alert('업무 이메일을 입력해주세요.'); return; }
+    if (!bizEmail) { showToast('업무 이메일을 입력해주세요.', 'warning'); return; }
     setBizEmailSent(true);
     // 실제로는 이메일 발송 API 호출
     setTimeout(() => setBizEmailVerified(true), 2000); // 데모용 자동 인증
@@ -93,7 +94,7 @@ function SignupContent() {
 
   const verifyChannel = async (platform: 'youtube' | 'instagram' | 'tiktok') => {
     const url = channelForm[platform];
-    if (!url) { alert('채널 URL을 입력해주세요.'); return; }
+    if (!url) { showToast('채널 URL을 입력해주세요.', 'warning'); return; }
     setChannelChecking(prev => ({ ...prev, [platform]: true }));
     await new Promise(r => setTimeout(r, 1500));
     setChannelVerified(prev => ({ ...prev, [platform]: true }));

@@ -1,4 +1,5 @@
 'use client';
+import { showToast } from '../components/Toast';
 import { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -320,7 +321,7 @@ function SafePaymentForm({ chatName, onSend }: { chatName: string; onSend: (data
       <div style={{ marginTop: 20, padding: '12px 14px', background: 'rgba(0,200,150,0.06)', border: '1px solid rgba(0,200,150,0.2)', borderRadius: 8 }}>
         <p style={{ fontSize: 12, color: '#00C896', lineHeight: 1.6 }}>안전결제를 통해 계약서 작성부터 정산까지 안전하게 진행됩니다.</p>
       </div>
-      <button onClick={() => { if (!form.projectTitle || !form.amount) { alert('프로젝트명과 금액을 입력해주세요.'); return; } onSend({ ...form, amount: parseInt(form.amount), workDays: parseInt(form.workDays) }); }}
+      <button onClick={() => { if (!form.projectTitle || !form.amount) { showToast('프로젝트명과 금액을 입력해주세요.', 'warning'); return; } onSend({ ...form, amount: parseInt(form.amount), workDays: parseInt(form.workDays) }); }}
         style={{ width: '100%', marginTop: 16, padding: '13px', background: 'linear-gradient(135deg,#00C896,#5B8DEF)', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 15, fontWeight: 700 }}>
         안전결제 요청 전송
       </button>
@@ -447,7 +448,7 @@ function PaymentPage({ paymentData, onBack }: { paymentData: any; onBack: () => 
                 <span style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>내용을 확인하였으며, 결제에 동의합니다. 주의사항: 입금 후 24시간 내 확인되지 않으면 자동 취소됩니다.</span>
               </label>
 
-              <button onClick={() => { if (!agreed) { alert('결제 동의를 체크해주세요.'); return; } setPaid(true); }} disabled={!agreed}
+              <button onClick={() => { if (!agreed) { showToast('결제 동의를 체크해주세요.', 'info'); return; } setPaid(true); }} disabled={!agreed}
                 style={{ width: '100%', padding: '14px', background: agreed ? 'linear-gradient(135deg,#FF2D55,#FF6B35)' : 'var(--border)', color: 'white', border: 'none', borderRadius: 10, cursor: agreed ? 'pointer' : 'not-allowed', fontSize: 15, fontWeight: 700 }}>
                 결제 진행
               </button>

@@ -1,4 +1,5 @@
 'use client';
+import { showToast } from '../../../components/Toast';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -41,7 +42,7 @@ export default function TikTokDetailPage() {
 
   const handleLike = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { alert('로그인 후 이용해주세요.'); return; }
+    if (!session) { showToast('로그인 후 이용해주세요.', 'info'); return; }
     if (liked) {
       await supabase.from('favorites').delete().eq('advertiser_id', session.user.id).eq('influencer_channel_id', id);
     } else {

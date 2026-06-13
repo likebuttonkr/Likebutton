@@ -118,7 +118,7 @@ export default function MyPage() {
   };
 
   const handleAddService = async () => {
-    if (!serviceForm.title || !serviceForm.category) { alert('서비스명과 카테고리를 입력해주세요.'); return; }
+    if (!serviceForm.title || !serviceForm.category) { showToast('서비스명과 카테고리를 입력해주세요.', 'warning'); return; }
     setServiceLoading(true);
     const { error } = await supabase.from('services').insert({ ...serviceForm, influencer_id: user.id, price_branded: parseInt(serviceForm.price_branded) || 0, price_ppl: parseInt(serviceForm.price_ppl) || 0 });
     if (!error) { await loadServices(user.id); setShowServiceForm(false); setServiceForm({ title: '', description: '', category: '', channel_name: '', channel_url: '', subscriber_count: '', price_branded: '', price_ppl: '', price_custom: '협의', platform: 'youtube' }); }
@@ -137,7 +137,7 @@ export default function MyPage() {
   };
 
   const handleAddQna = async () => {
-    if (!qnaForm.title || !qnaForm.content) { alert('제목과 내용을 입력해주세요.'); return; }
+    if (!qnaForm.title || !qnaForm.content) { showToast('제목과 내용을 입력해주세요.', 'warning'); return; }
     const { error } = await supabase.from('qna').insert({ ...qnaForm, user_id: user.id });
     if (!error) { await loadQna(user.id); setShowQnaForm(false); setQnaForm({ category: '건의사항', title: '', content: '' }); }
   };
@@ -298,7 +298,7 @@ export default function MyPage() {
 
               <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <button style={{ fontSize: 13, color: '#FF2D55', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-                  onClick={() => { if (confirm('정말 탈퇴하시겠어요? 모든 데이터가 삭제됩니다.')) alert('회원탈퇴가 처리되었습니다.'); }}>
+                  onClick={() => { if (confirm('정말 탈퇴하시겠어요? 모든 데이터가 삭제됩니다.')) showToast('회원탈퇴가 처리되었습니다.', 'success'); }}>
                   회원탈퇴
                 </button>
                 {editMode && (
@@ -782,7 +782,7 @@ function RevenueManager({ userId, isMobile }: { userId: string; isMobile: boolea
 
   const submitWithdrawal = async () => {
     if (!withdrawalForm.bank || !withdrawalForm.account || !withdrawalForm.holder || !withdrawalForm.amount) {
-      alert('모든 항목을 입력해주세요.'); return;
+      showToast('모든 항목을 입력해주세요.', 'warning'); return;
     }
     const { supabase } = await import('../lib/supabase');
     await supabase.from('withdrawals').insert({
@@ -793,7 +793,7 @@ function RevenueManager({ userId, isMobile }: { userId: string; isMobile: boolea
       amount: parseInt(withdrawalForm.amount.replace(/[^0-9]/g, '')),
       status: '출금 신청',
     });
-    alert('출금 신청이 완료되었습니다.');
+    showToast('출금 신청이 완료되었습니다.', 'success');
     setWithdrawalForm({ bank: '', account: '', holder: '', amount: '' });
   };
 

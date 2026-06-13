@@ -1,4 +1,5 @@
 'use client';
+import { showToast } from '../components/Toast';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -30,7 +31,7 @@ export default function LoginPage() {
       provider: 'kakao',
       options: { redirectTo: `${window.location.origin}/mypage` }
     });
-    if (error) alert('카카오 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    if (error) showToast('카카오 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
   };
 
   const handleGoogleLogin = async () => {
@@ -38,7 +39,7 @@ export default function LoginPage() {
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/mypage` }
     });
-    if (error) alert('구글 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    if (error) showToast('구글 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
   };
 
   return (

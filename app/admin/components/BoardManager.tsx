@@ -17,7 +17,7 @@ function NoticeManager() {
     setList(data || []);
   };
   const save = async () => {
-    if (!form.title || !form.content) { alert('제목과 내용을 입력해주세요.'); return; }
+    if (!form.title || !form.content) { showToast('제목과 내용을 입력해주세요.', 'warning'); return; }
     if (editId) {
       await supabase.from('notices').update(form).eq('id', editId);
     } else {
@@ -100,7 +100,7 @@ function EventManager() {
     setList(data || []);
   };
   const save = async () => {
-    if (!form.title) { alert('제목을 입력해주세요.'); return; }
+    if (!form.title) { showToast('제목을 입력해주세요.', 'warning'); return; }
     if (editId) await supabase.from('events').update(form).eq('id', editId);
     else await supabase.from('events').insert(form);
     setForm({ title: '', content: '', start_date: '', end_date: '' }); setShowForm(false); setEditId(null); load();
@@ -176,7 +176,7 @@ function FAQManager() {
     setList(data || []);
   };
   const save = async () => {
-    if (!form.question || !form.answer) { alert('질문과 답변을 입력해주세요.'); return; }
+    if (!form.question || !form.answer) { showToast('질문과 답변을 입력해주세요.', 'warning'); return; }
     if (editId) await supabase.from('faqs').update(form).eq('id', editId);
     else await supabase.from('faqs').insert(form);
     setForm({ question: '', answer: '' }); setShowForm(false); setEditId(null); load();
@@ -323,7 +323,7 @@ function TermsManager() {
     setList(data || []);
   };
   const save = async () => {
-    if (!form.title || !form.content) { alert('제목과 내용을 입력해주세요.'); return; }
+    if (!form.title || !form.content) { showToast('제목과 내용을 입력해주세요.', 'warning'); return; }
     if (editId) await supabase.from('terms').update(form).eq('id', editId);
     else await supabase.from('terms').insert(form);
     setForm({ title: '', content: '' }); setShowForm(false); setEditId(null); load();

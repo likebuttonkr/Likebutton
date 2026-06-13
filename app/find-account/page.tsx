@@ -1,4 +1,5 @@
 'use client';
+import { showToast } from '../components/Toast';
 import { useState } from 'react';
 import Link from 'next/link';
 import Header from '../components/Header';
@@ -21,7 +22,7 @@ export default function FindAccountPage() {
   const [pwError, setPwError] = useState('');
 
   const handleFindId = async () => {
-    if (!phone) { alert('휴대폰번호를 입력해주세요.'); return; }
+    if (!phone) { showToast('휴대폰번호를 입력해주세요.', 'warning'); return; }
     setIdLoading(true);
     // 실제로는 phone으로 검색
     const { data } = await supabase.from('profiles').select('email').eq('phone', phone).single();

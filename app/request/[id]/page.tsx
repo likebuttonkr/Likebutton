@@ -128,7 +128,7 @@ export default function RequestPage() {
 
   const handleSubmit = async () => {
     if (!form.projectName || !form.releaseDate || form.adTypes.length === 0) {
-      alert('프로젝트명, 릴리즈 일정, 광고 형태는 필수 항목입니다.'); return;
+      showToast('프로젝트명, 릴리즈 일정, 광고 형태는 필수 항목입니다.', 'error'); return;
     }
     try {
       const { supabase } = await import('../../lib/supabase');
