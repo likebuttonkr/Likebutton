@@ -139,3 +139,52 @@ input::placeholder { color: var(--text-muted); }
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ===== 전체 UI 개선 ===== */
+
+/* 링크/버튼 hover 효과 */
+a { transition: opacity 0.15s; }
+a:hover { opacity: 0.8; }
+
+button { transition: all 0.15s; }
+button:hover:not(:disabled) { filter: brightness(1.1); }
+button:active:not(:disabled) { transform: scale(0.98); }
+
+/* 카드 hover */
+.card-hover {
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.card-hover:hover {
+  border-color: rgba(255,45,85,0.3) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+/* input focus 개선 */
+input:focus, textarea:focus, select:focus {
+  border-color: #FF2D55 !important;
+  box-shadow: 0 0 0 3px rgba(255,45,85,0.08);
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+/* 텍스트 선택 색상 */
+::selection { background: rgba(255,45,85,0.3); color: white; }
+
+/* 이미지 로딩 */
+img { transition: opacity 0.3s; }
+img[src=""] { opacity: 0; }
+
+/* 테이블 hover */
+tbody tr:hover { background: rgba(255,255,255,0.02) !important; }
+
+/* 반응형 테이블 */
+@media (max-width: 768px) {
+  table { font-size: 12px !important; }
+  th, td { padding: 8px 10px !important; }
+}

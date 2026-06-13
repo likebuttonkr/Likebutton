@@ -166,7 +166,17 @@ export default function AdminPage() {
         {/* 대시보드 */}
         {activeTab === 'dashboard' && (
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 900, marginBottom: 20 }}>대시보드</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <h1 style={{ fontSize: 20, fontWeight: 900 }}>대시보드</h1>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['오늘', '7일', '30일', '전체'].map(period => (
+                  <button key={period}
+                    style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid var(--border)', background: period === '30일' ? 'rgba(255,45,85,0.1)' : 'transparent', color: period === '30일' ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, fontWeight: period === '30일' ? 700 : 400, cursor: 'pointer' }}>
+                    {period}
+                  </button>
+                ))}
+              </div>
+            </div>
             {stats.pendingApprovals > 0 && (
               <div onClick={() => { setActiveTab('advertisers'); setActiveSub(''); }}
                 style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.3)', borderRadius: 10, padding: '12px 18px', marginBottom: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -213,6 +223,9 @@ export default function AdminPage() {
                   ))}
                 </tbody>
               </table>
+            <div style={{ marginTop: 12, textAlign: 'right' }}>
+                <button onClick={() => setActiveTab('influencers')} style={{ fontSize: 12, color: '#FF2D55', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>전체 회원 보기 →</button>
+              </div>
             </div>
           </div>
         )}
