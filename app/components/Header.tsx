@@ -91,9 +91,10 @@ export default function Header({ isLoggedIn: isLoggedInProp = false, userType: u
           </button>
           {isLoggedIn ? (
             <>
-              <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 8, borderRadius: 8 }}>
+              <Link href="/notifications" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 8, borderRadius: 8, display: 'flex', alignItems: 'center', position: 'relative', textDecoration: 'none' }}>
                 <Bell size={18} />
-              </button>
+                <span style={{ position: 'absolute', top: 4, right: 4, width: 8, height: 8, background: '#FF2D55', borderRadius: '50%', border: '1.5px solid var(--bg)' }} className="badge-pulse" />
+              </Link>
               <Link href="/mypage" style={{ textDecoration: 'none' }}>
                 <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'white' }}>U</div>
               </Link>

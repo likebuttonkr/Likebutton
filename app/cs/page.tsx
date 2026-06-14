@@ -1,6 +1,7 @@
 'use client';
 import { showToast } from '../components/Toast';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { supabase } from '../lib/supabase';
@@ -23,6 +24,7 @@ const FAQS = [
 ];
 
 export default function CSPage() {
+  const router = useRouter();
   const [tab, setTab] = useState<'notice'|'event'|'faq'|'qna'>('notice');
   const [notices, setNotices] = useState<any[]>(FALLBACK_NOTICES);
   const [events, setEvents] = useState<any[]>(FALLBACK_EVENTS);

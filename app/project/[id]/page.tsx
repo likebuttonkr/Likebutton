@@ -353,16 +353,36 @@ export default function ProjectDetail() {
                   </div>
                 ) : (
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
                       <p style={{ fontSize: 13, fontWeight: 600 }}>별점</p>
-                      <div style={{ display: 'flex', gap: 4 }}>
+                      <div style={{ display: 'flex', gap: 2, position: 'relative', height: 28 }}>
                         {[1,2,3,4,5].map(s => (
-                          <button key={s} onClick={() => setRating(s)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
-                            <Star size={24} fill={s <= rating ? '#FFB800' : 'transparent'} color="#FFB800" />
-                          </button>
+                          <div key={s} style={{ position: 'relative', width: 28, height: 28 }}>
+                            {/* 왼쪽 반(0.5점) */}
+                            <button onClick={() => setRating(s - 0.5)}
+                              style={{ position: 'absolute', left: 0, top: 0, width: '50%', height: '100%', background: 'none', border: 'none', cursor: 'pointer', zIndex: 2, padding: 0 }} />
+                            {/* 오른쪽 반(1점) */}
+                            <button onClick={() => setRating(s)}
+                              style={{ position: 'absolute', right: 0, top: 0, width: '50%', height: '100%', background: 'none', border: 'none', cursor: 'pointer', zIndex: 2, padding: 0 }} />
+                            {/* 별 렌더링 */}
+                            <div style={{ position: 'absolute', inset: 0, display: 'flex', pointerEvents: 'none' }}>
+                              {rating >= s ? (
+                                <Star size={26} fill="#FFB800" color="#FFB800" />
+                              ) : rating >= s - 0.5 ? (
+                                <div style={{ position: 'relative', width: 26, height: 26 }}>
+                                  <Star size={26} fill="transparent" color="#FFB800" style={{ position: 'absolute' }} />
+                                  <div style={{ position: 'absolute', left: 0, top: 0, width: '50%', overflow: 'hidden' }}>
+                                    <Star size={26} fill="#FFB800" color="#FFB800" />
+                                  </div>
+                                </div>
+                              ) : (
+                                <Star size={26} fill="transparent" color="#FFB800" />
+                              )}
+                            </div>
+                          </div>
                         ))}
                       </div>
-                      <span style={{ fontSize: 18, fontWeight: 900, color: '#FFB800' }}>{rating}.0</span>
+                      <span style={{ fontSize: 18, fontWeight: 900, color: '#FFB800' }}>{rating}</span>
                     </div>
                     <textarea value={reviewText} onChange={e => setReviewText(e.target.value)} placeholder="광고 진행 후기를 남겨주세요..."
                       style={{ width: '100%', minHeight: 100, padding: '12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', marginBottom: 12 }} />
@@ -378,9 +398,20 @@ export default function ProjectDetail() {
 
           {/* 사이드바 */}
           <div style={{ position: isMobile ? 'static' : 'sticky', top: 88 }}>
-            <Link href="/messages" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', borderRadius: 10, color: 'white', textDecoration: 'none', fontSize: 14, fontWeight: 700, marginBottom: 12 }}>
+            <Link href="/messages" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', borderRadius: 10, color: 'white', textDecoration: 'none', fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
               <MessageSquare size={16} /> 대화하기
             </Link>
+            {(project.status === '광고 요청' || project.status === '입금 대기') && (
+              <button onClick={async () => {
+                if (!window.confirm('광고 요청을 취소하시겠어요?\n취소 후 복구가 불가능합니다.')) return;
+                await supabase.from('projects').update({ status: '광고 요청 취소' }).eq('id', id);
+                showToast('광고 요청이 취소되었습니다.', 'info');
+                setTimeout(() => window.location.href = '/mypage', 1500);
+              }}
+                style={{ width: '100%', padding: '10px', background: 'transparent', border: '1px solid rgba(255,45,85,0.3)', borderRadius: 10, color: '#FF2D55', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginBottom: 12 }}>
+                광고 요청 취소
+              </button>
+            )}
 
             {/* 광고 요청 열람 */}
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', marginBottom: 12 }}>
