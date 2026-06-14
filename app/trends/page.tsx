@@ -103,16 +103,16 @@ export default function TrendsPage() {
         {/* 카테고리 필터 + 정렬 */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
           <select style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
-            <option>대분류명 ▼</option>
-            {['뷰티/패션', '음식/요리', '게임', '여행', '운동', 'IT/테크', '교육', '라이프스타일'].map(c => <option key={c}>{c}</option>)}
+            <option value="">전체 카테고리</option>
+            {['뷰티/패션', '음식/요리', '게임', '여행', '운동', 'IT/테크', '교육', '라이프스타일'].map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <select style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
-            <option>중분류명 ▼</option>
-            {['뷰티', '패션', '스킨케어', '헤어'].map(c => <option key={c}>{c}</option>)}
+            <option value="">전체 중분류</option>
+            {['뷰티', '패션', '스킨케어', '헤어', '먹방', '요리', 'PC게임', '모바일게임', '국내여행', '해외여행', '헬스', '요가'].map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <select style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
-            <option>소분류명 ▼</option>
-            {['메이크업', '립스틱', '파운데이션', '아이섀도우'].map(c => <option key={c}>{c}</option>)}
+            <option value="">전체 소분류</option>
+            {['메이크업', '립스틱', '파운데이션', '아이섀도우', '맛집', '홈쿡', 'FPS', 'RPG', '유럽여행', '제주도', '다이어트', '필라테스'].map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
             <select style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>

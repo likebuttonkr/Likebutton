@@ -240,9 +240,23 @@ function SearchContent() {
             <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
               <div style={{ flex: 1, position: 'relative' }}>
                 <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input value={inputVal} onChange={e => setInputVal(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && setQuery(inputVal)}
+                <input value={inputVal}
+                  onChange={e => { setInputVal(e.target.value); handleSearchInput(e.target.value); }}
+                  onKeyDown={e => { if (e.key === 'Enter') { setQuery(inputVal); setShowAutoComplete(false); } }}
+                  onBlur={() => setTimeout(() => setShowAutoComplete(false), 150)}
+                  onFocus={() => inputVal && handleSearchInput(inputVal)}
                   placeholder="채널명, 카테고리로 검색..." style={{ paddingLeft: 38, fontSize: 14, height: 42 }} />
+                {showAutoComplete && autoCompleteList.length > 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, zIndex: 100, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', marginTop: 4 }}>
+                    {autoCompleteList.map(keyword => (
+                      <button key={keyword} onMouseDown={() => { setInputVal(keyword); setQuery(keyword); setShowAutoComplete(false); }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 14px', border: 'none', borderBottom: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: 14, color: 'var(--text)', textAlign: 'left' }}>
+                        <Search size={13} color="var(--text-muted)" />
+                        <span>{keyword}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <button onClick={() => setQuery(inputVal)} style={{ padding: '0 20px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>검색</button>
               <button onClick={() => setFilterOpen(!filterOpen)}
@@ -253,49 +267,39 @@ function SearchContent() {
 
             {/* Filter panel */}
             {filterOpen && (
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px', marginBottom: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <p style={{ fontWeight: 700, fontSize: 14 }}>필터</p>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, marginBottom: 16, overflow: 'hidden' }}>
+                {/* 필터 헤더 */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Filter size={15} color="#FF2D55" />
+                    <p style={{ fontWeight: 700, fontSize: 14 }}>필터</p>
+                    {totalFilters > 0 && <span style={{ background: '#FF2D55', color: 'white', borderRadius: 20, padding: '1px 8px', fontSize: 11, fontWeight: 700 }}>{totalFilters}개 선택</span>}
+                  </div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={resetFilters} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}>
-                      <RotateCcw size={12} /> 초기화
+                    <button onClick={resetFilters} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>
+                      <RotateCcw size={11} /> 초기화
                     </button>
-                    <button onClick={() => setFilterOpen(false)} style={{ padding: '5px 10px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', border: 'none', borderRadius: 6, color: 'white', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
-                      인플루언서 찾기
+                    <button onClick={() => setFilterOpen(false)} style={{ padding: '6px 14px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', border: 'none', borderRadius: 8, color: 'white', fontSize: 12, cursor: 'pointer', fontWeight: 700 }}>
+                      적용하기
                     </button>
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
-                  <div>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>구독자 수</p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                      {SUBSCRIBER_FILTERS.map(f => <FilterChip key={f} label={f} selected={subFilters.includes(f)} onClick={() => toggle(subFilters, setSubFilters, f)} />)}
+                {/* 필터 내용 */}
+                <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {[
+                    { label: '구독자 수', items: SUBSCRIBER_FILTERS, selected: subFilters, setter: setSubFilters },
+                    { label: '구독자 연령', items: AGE_FILTERS, selected: ageFilters, setter: setAgeFilters },
+                    { label: '구독자 성별', items: GENDER_FILTERS, selected: genderFilters, setter: setGenderFilters },
+                    { label: '예상 조회수', items: VIEW_FILTERS, selected: viewFilters, setter: setViewFilters },
+                    { label: '광고비 예산', items: BUDGET_FILTERS, selected: budgetFilters, setter: setBudgetFilters },
+                  ].map(group => (
+                    <div key={group.label} style={{ display: 'flex', gap: 16, alignItems: 'flex-start', paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', minWidth: 72, paddingTop: 6 }}>{group.label}</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, flex: 1 }}>
+                        {group.items.map(f => <FilterChip key={f} label={f} selected={group.selected.includes(f)} onClick={() => toggle(group.selected, group.setter, f)} />)}
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>구독자 연령</p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                      {AGE_FILTERS.map(f => <FilterChip key={f} label={f} selected={ageFilters.includes(f)} onClick={() => toggle(ageFilters, setAgeFilters, f)} />)}
-                    </div>
-                  </div>
-                  <div>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>구독자 성별</p>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      {GENDER_FILTERS.map(f => <FilterChip key={f} label={f} selected={genderFilters.includes(f)} onClick={() => toggle(genderFilters, setGenderFilters, f)} />)}
-                    </div>
-                  </div>
-                  <div>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>예상 조회수</p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                      {VIEW_FILTERS.map(f => <FilterChip key={f} label={f} selected={viewFilters.includes(f)} onClick={() => toggle(viewFilters, setViewFilters, f)} />)}
-                    </div>
-                  </div>
-                  <div>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>광고비 예산</p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                      {BUDGET_FILTERS.map(f => <FilterChip key={f} label={f} selected={budgetFilters.includes(f)} onClick={() => toggle(budgetFilters, setBudgetFilters, f)} />)}
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             )}
