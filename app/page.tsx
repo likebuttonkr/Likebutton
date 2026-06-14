@@ -68,6 +68,7 @@ const SEARCH_TRENDS = {
 export default function MainPage() {
   const router = useRouter();
   const [bannerIdx, setBannerIdx] = useState(0);
+  const [bannerHover, setBannerHover] = useState(false);
   const [searchVal, setSearchVal] = useState('');
   const [videos, setVideos] = useState<YoutubeVideo[]>([]);
   const [channels, setChannels] = useState<YoutubeChannel[]>([]);
@@ -114,7 +115,21 @@ export default function MainPage() {
       <Header />
 
       {/* Hero Banner */}
-      <section style={{ background: 'linear-gradient(135deg, #0f0f1a 0%, #1a0a14 100%)', padding: isMobile ? '36px 16px' : '60px 24px', overflow: 'hidden' }}>
+      <section style={{ background: 'linear-gradient(135deg, #0f0f1a 0%, #1a0a14 100%)', padding: isMobile ? '36px 16px' : '60px 24px', overflow: 'hidden', position: 'relative' }}
+        onMouseEnter={() => setBannerHover(true)} onMouseLeave={() => setBannerHover(false)}>
+        {/* 좌우 화살표 */}
+        {bannerHover && !isMobile && (
+          <>
+            <button onClick={() => setBannerIdx(i => (i - 1 + BANNERS.length) % BANNERS.length)}
+              style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', zIndex: 10, width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, backdropFilter: 'blur(8px)' }}>
+              ‹
+            </button>
+            <button onClick={() => setBannerIdx(i => (i + 1) % BANNERS.length)}
+              style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', zIndex: 10, width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, backdropFilter: 'blur(8px)' }}>
+              ›
+            </button>
+          </>
+        )}
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 380px', gap: isMobile ? 28 : 48, alignItems: 'center' }}>
           <div>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,45,85,0.15)', border: '1px solid rgba(255,45,85,0.3)', borderRadius: 20, padding: '5px 14px', fontSize: 12, fontWeight: 600, color: '#FF2D55', marginBottom: 20 }}>
@@ -230,7 +245,28 @@ export default function MainPage() {
 
         {/* 2열 레이아웃: 검색 트렌드 + 급상승 인플루언서 */}
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 20, marginBottom: isMobile ? 36 : 52 }}>
-          {/* 검색 트렌드 */}
+          {/* 서비스 소개 */}
+        <section style={{ marginBottom: isMobile ? 36 : 52 }}>
+          <div style={{ textAlign: 'center', marginBottom: 28 }}>
+            <h2 style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, marginBottom: 8 }}>라이크버튼이 특별한 이유</h2>
+            <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>광고주와 인플루언서를 안전하고 효율적으로 연결합니다</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3,1fr)', gap: 16 }}>
+            {[
+              { icon: '🔍', title: '정확한 매칭', desc: '구독자 수, 연령, 성별, 카테고리 등 다양한 필터로 내 브랜드에 딱 맞는 인플루언서를 찾아드려요.' },
+              { icon: '🔒', title: '안전한 거래', desc: '안전결제 시스템으로 광고 완료 전까지 금액을 보호하고, 모든 거래 과정을 투명하게 관리합니다.' },
+              { icon: '📊', title: '데이터 기반', desc: '실시간 조회수, 구독자 증가율, 시청자층 분석 등 빅데이터로 최적의 광고 효과를 예측합니다.' },
+            ].map((item, i) => (
+              <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '28px 24px', textAlign: 'center' }}>
+                <div style={{ fontSize: 40, marginBottom: 14 }}>{item.icon}</div>
+                <h3 style={{ fontSize: 17, fontWeight: 800, marginBottom: 10 }}>{item.title}</h3>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.7 }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 검색 트렌드 */}
           <section>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <h2 style={{ fontSize: isMobile ? 17 : 21, fontWeight: 800 }}>🔍 검색 트렌드</h2>
@@ -287,8 +323,14 @@ export default function MainPage() {
         {/* 급상승 채널 */}
         <section style={{ marginBottom: isMobile ? 36 : 52 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <h2 style={{ fontSize: isMobile ? 17 : 21, fontWeight: 800 }}>✨ 주요 고객사 인플루언서</h2>
+            <h2 style={{ fontSize: isMobile ? 17 : 21, fontWeight: 800 }}>✨ 주요 고객사</h2>
             <Link href="/search" style={{ fontSize: 13, color: '#FF2D55', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>더보기 <ArrowRight size={13} /></Link>
+          </div>
+          {/* 로고 영역 */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 20, justifyContent: 'center' }}>
+            {['삼성', 'LG', '현대', 'SK', '롯데', 'CJ', '아모레', '올리브영', '마켓컬리', '쿠팡'].map(logo => (
+              <div key={logo} style={{ padding: '10px 20px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, fontSize: 13, fontWeight: 700, color: 'var(--text-muted)' }}>{logo}</div>
+            ))}
           </div>
           {loading ? (
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${isMobile ? 2 : 4}, 1fr)`, gap: 12 }}>

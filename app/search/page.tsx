@@ -53,6 +53,17 @@ function SearchContent() {
   const [loading, setLoading] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [autoCompleteList, setAutoCompleteList] = useState<string[]>([]);
+  const [isAdvertiser, setIsAdvertiser] = useState(false);
+
+  useEffect(() => {
+    import('../lib/supabase').then(({ supabase }) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) return;
+        supabase.from('profiles').select('user_type').eq('id', session.user.id).single()
+          .then(({ data }) => { if (data?.user_type === 'advertiser') setIsAdvertiser(true); });
+      });
+    });
+  }, []);
   const [showAutoComplete, setShowAutoComplete] = useState(false);
   // 필터 카테고리
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
