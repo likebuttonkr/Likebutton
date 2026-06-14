@@ -6,16 +6,12 @@ import Footer from '../components/Footer';
 import { supabase } from '../lib/supabase';
 import { ChevronDown, ChevronUp, Plus, ArrowLeft, Paperclip, X } from 'lucide-react';
 
-const MOCK_NOTICES = [
-  { id: 1, title: '라이크버튼 서비스 업데이트 안내 (2024년 3월)', content: '안녕하세요, 라이크버튼입니다.\n\n2024년 3월 주요 업데이트 내용을 안내드립니다.\n\n1. 인플루언서 검색 필터 기능 강화\n2. 안전결제 시스템 개선\n3. 모바일 UI/UX 개선\n4. 성능 최적화 및 버그 수정\n\n더욱 편리한 서비스를 위해 지속적으로 노력하겠습니다.\n감사합니다.', date: '2024.03.15', isNew: true },
-  { id: 2, title: '개인정보 처리방침 개정 안내', content: '개인정보 처리방침이 2024년 2월 1일부터 개정됩니다.\n주요 변경사항을 확인해주세요.', date: '2024.02.28', isNew: false },
-  { id: 3, title: '설 연휴 고객센터 운영 안내', content: '설 연휴 기간 동안 고객센터 운영이 제한됩니다.\n2024.02.09 ~ 2024.02.12 고객센터 휴무', date: '2024.02.05', isNew: false },
+const FALLBACK_NOTICES = [
+  { id: 1, title: '라이크버튼 서비스 업데이트 안내', content: '안녕하세요, 라이크버튼입니다.\n\n더욱 편리한 서비스를 위해 지속적으로 노력하겠습니다.\n감사합니다.', date: '2024.03.15', isNew: true },
 ];
 
-const MOCK_EVENTS = [
-  { id: 1, title: '첫 광고 계약 10% 할인 이벤트', period: '2024.03.01 ~ 2024.03.31', status: '진행중', content: '라이크버튼에서 첫 광고 계약을 체결하시는 광고주분들께 10% 할인 혜택을 드립니다.\n\n✅ 대상: 신규 광고주 (첫 계약)\n✅ 혜택: 광고비 10% 할인 쿠폰\n✅ 기간: 2024년 3월 한 달간\n\n지금 바로 인플루언서를 찾아보세요!' },
-  { id: 2, title: '인플루언서 채널 등록 이벤트', period: '2024.02.01 ~ 2024.02.29', status: '진료중', content: '인플루언서 채널 등록 이벤트입니다.' },
-  { id: 3, title: '신규 가입 쿠폰 지급 이벤트', period: '2024.01.01 ~ 2024.01.31', status: '종료', content: '신규 가입 쿠폰 지급 이벤트가 종료되었습니다.' },
+const FALLBACK_EVENTS = [
+  { id: 1, title: '첫 광고 계약 10% 할인 이벤트', period: '2024.03.01 ~ 2024.03.31', status: '진행중', content: '라이크버튼에서 첫 광고 계약을 체결하시는 광고주분들께 10% 할인 혜택을 드립니다.' },
 ];
 
 const FAQS = [
@@ -28,6 +24,8 @@ const FAQS = [
 
 export default function CSPage() {
   const [tab, setTab] = useState<'notice'|'event'|'faq'|'qna'>('notice');
+  const [notices, setNotices] = useState<any[]>(FALLBACK_NOTICES);
+  const [events, setEvents] = useState<any[]>(FALLBACK_EVENTS);
   const [expandedFaq, setExpandedFaq] = useState<number|null>(null);
   const [eventTab, setEventTab] = useState<'진행중'|'종료'>('진행중');
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -49,6 +47,13 @@ export default function CSPage() {
   }, []);
 
   useEffect(() => {
+    // 공지사항 DB 로드
+    supabase.from('notices').select('*').order('created_at', { ascending: false })
+      .then(({ data }) => { if (data && data.length > 0) setNotices(data.map((n, i) => ({ ...n, date: new Date(n.created_at).toLocaleDateString('ko-KR'), isNew: i === 0 }))); });
+    // 이벤트 DB 로드
+    supabase.from('events').select('*').order('created_at', { ascending: false })
+      .then(({ data }) => { if (data && data.length > 0) setEvents(data.map(e => ({ ...e, period: `${e.start_date || '-'} ~ ${e.end_date || '-'}`, status: e.end_date && new Date(e.end_date) < new Date() ? '종료' : '진행중' }))); });
+    // 로그인 체크
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(session.user);
@@ -132,10 +137,10 @@ export default function CSPage() {
                 </tr>
               </thead>
               <tbody>
-                {MOCK_NOTICES.map((notice, i) => (
+                {notices.map((notice, i) => (
                   <tr key={notice.id} onClick={() => setSelectedItem(notice)}
                     style={{ borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
-                    <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--text-muted)', width: 60 }}>{MOCK_NOTICES.length - i}</td>
+                    <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--text-muted)', width: 60 }}>{notices.length - i}</td>
                     <td style={{ padding: '14px 16px', fontSize: 14, fontWeight: 600 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         {notice.isNew && <span style={{ fontSize: 10, background: '#FF2D55', color: 'white', padding: '1px 6px', borderRadius: 10, fontWeight: 700 }}>N</span>}
@@ -162,7 +167,7 @@ export default function CSPage() {
               ))}
             </div>
             <div style={{ display: 'grid', gap: 12 }}>
-              {MOCK_EVENTS.filter(e => eventTab === '진행중' ? e.status !== '종료' : e.status === '종료').map(event => (
+              {events.filter(e => eventTab === '진행중' ? e.status !== '종료' : e.status === '종료').map(event => (
                 <div key={event.id} onClick={() => setSelectedItem(event)}
                   style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '18px 20px', cursor: 'pointer', display: 'flex', gap: 14, alignItems: 'center' }}>
                   <div style={{ width: 56, height: 56, borderRadius: 10, background: event.status === '종료' ? 'var(--bg-card2)' : 'linear-gradient(135deg,#FF2D55,#FF6B35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>

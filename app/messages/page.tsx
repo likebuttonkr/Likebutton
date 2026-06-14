@@ -45,6 +45,8 @@ function detectBannedKeyword(text: string): string | null {
 export default function MessagesPage() {
   const [selectedChat, setSelectedChat] = useState(CHATS[0]);
   const [allMessages, setAllMessages] = useState(INITIAL_MESSAGES);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [dbChats, setDbChats] = useState<any[]>([]);
   const [input, setInput] = useState('');
   const [warning, setWarning] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,20 +70,36 @@ export default function MessagesPage() {
 
   // 실제 메시지 DB에서 로드
   useEffect(() => {
-    const loadMessages = async () => {
+    const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      const { data } = await supabase
+      setCurrentUser(session.user);
+
+      // 실제 메시지 DB 로드
+      const { data: msgs } = await supabase
         .from('messages')
-        .select('*')
+        .select('*, sender:profiles!messages_sender_id_fkey(name, avatar_url)')
         .or(`sender_id.eq.${session.user.id},receiver_id.eq.${session.user.id}`)
         .order('created_at', { ascending: true });
-      if (data && data.length > 0) {
-        // 실제 메시지가 있으면 반영 (추후 확장)
-        console.log('DB messages loaded:', data.length);
+
+      if (msgs && msgs.length > 0) {
+        // 대화 상대별로 그룹핑
+        const grouped: Record<string, any[]> = {};
+        msgs.forEach(msg => {
+          const otherId = msg.sender_id === session.user.id ? msg.receiver_id : msg.sender_id;
+          if (!grouped[otherId]) grouped[otherId] = [];
+          grouped[otherId].push({
+            id: msg.id,
+            from: msg.sender_id === session.user.id ? 'me' : 'other',
+            text: msg.content,
+            time: new Date(msg.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+          });
+        });
+        // allMessages에 DB 데이터 병합
+        setAllMessages(prev => ({ ...prev, ...grouped }));
       }
     };
-    loadMessages();
+    init();
   }, []);
 
   // Supabase Realtime 메시지 구독
@@ -120,7 +138,7 @@ export default function MessagesPage() {
 
   const messages = allMessages[selectedChat.id] || [];
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
     const banned = detectBannedKeyword(input);
     if (banned) {
@@ -128,11 +146,21 @@ export default function MessagesPage() {
       return;
     }
     setWarning(null);
+    const msgText = input;
+    setInput('');
+    // UI 즉시 업데이트
     setAllMessages(prev => ({
       ...prev,
-      [selectedChat.id]: [...(prev[selectedChat.id] || []), { id: Date.now(), from: 'me', text: input, time: '방금' }],
+      [selectedChat.id]: [...(prev[selectedChat.id] || []), { id: Date.now(), from: 'me', text: msgText, time: '방금' }],
     }));
-    setInput('');
+    // DB 저장
+    if (currentUser) {
+      await supabase.from('messages').insert({
+        sender_id: currentUser.id,
+        receiver_id: String(selectedChat.id),
+        content: msgText,
+      });
+    }
   };
 
   const openPayment = (safePayment: any) => {
