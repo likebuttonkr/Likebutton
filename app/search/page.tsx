@@ -54,6 +54,15 @@ function SearchContent() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [autoCompleteList, setAutoCompleteList] = useState<string[]>([]);
   const [showAutoComplete, setShowAutoComplete] = useState(false);
+  // 필터 카테고리
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [allCategorySelected, setAllCategorySelected] = useState(true);
+  const [categorySearchVal, setCategorySearchVal] = useState('');
+  const [showCategoryAC, setShowCategoryAC] = useState(false);
+  const [categoryACList, setCategoryACList] = useState<string[]>([]);
+  // 광고비 직접입력
+  const [budgetMin, setBudgetMin] = useState('');
+  const [budgetMax, setBudgetMax] = useState('');
 
   const CATEGORY_KEYWORDS = [
     '뷰티', '메이크업', '스킨케어', '헤어', '네일',
@@ -67,6 +76,32 @@ function SearchContent() {
     '라이프스타일', '육아', '반려동물', '인테리어',
     '엔터', '음악', '댄스', '영화', '드라마',
   ];
+
+  const handleCategoryInput = (val: string) => {
+    setCategorySearchVal(val);
+    if (val.length > 0) {
+      const filtered = CATEGORY_KEYWORDS.filter(k => k.includes(val) && !selectedCategories.includes(k)).slice(0, 8);
+      setCategoryACList(filtered);
+      setShowCategoryAC(filtered.length > 0);
+    } else {
+      setShowCategoryAC(false);
+    }
+  };
+
+  const addCategory = (cat: string) => {
+    if (!selectedCategories.includes(cat)) {
+      setSelectedCategories(prev => [...prev, cat]);
+      setAllCategorySelected(false);
+    }
+    setCategorySearchVal('');
+    setShowCategoryAC(false);
+  };
+
+  const removeCategory = (cat: string) => {
+    const next = selectedCategories.filter(c => c !== cat);
+    setSelectedCategories(next);
+    if (next.length === 0) setAllCategorySelected(true);
+  };
 
   const handleSearchInput = (val: string) => {
     setQuery(val);
@@ -98,7 +133,7 @@ function SearchContent() {
   const [viewFilters, setViewFilters] = useState<string[]>([]);
   const [budgetFilters, setBudgetFilters] = useState<string[]>([]);
 
-  const totalFilters = subFilters.length + ageFilters.length + genderFilters.length + viewFilters.length + budgetFilters.length;
+  const totalFilters = subFilters.length + ageFilters.length + genderFilters.length + viewFilters.length + budgetFilters.length + selectedCategories.length + (budgetMin || budgetMax ? 1 : 0);
 
   const toggle = (arr: string[], setArr: (v: string[]) => void, val: string) => {
     setArr(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val]);
@@ -285,21 +320,83 @@ function SearchContent() {
                   </div>
                 </div>
                 {/* 필터 내용 */}
-                <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {/* 구독자 수 */}
                   {[
                     { label: '구독자 수', items: SUBSCRIBER_FILTERS, selected: subFilters, setter: setSubFilters },
                     { label: '구독자 연령', items: AGE_FILTERS, selected: ageFilters, setter: setAgeFilters },
                     { label: '구독자 성별', items: GENDER_FILTERS, selected: genderFilters, setter: setGenderFilters },
                     { label: '예상 조회수', items: VIEW_FILTERS, selected: viewFilters, setter: setViewFilters },
-                    { label: '광고비 예산', items: BUDGET_FILTERS, selected: budgetFilters, setter: setBudgetFilters },
                   ].map(group => (
-                    <div key={group.label} style={{ display: 'flex', gap: 16, alignItems: 'flex-start', paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', minWidth: 72, paddingTop: 6 }}>{group.label}</p>
+                    <div key={group.label} style={{ display: 'flex', gap: 16, alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14, borderBottom: '1px solid var(--border)' }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', minWidth: 80, paddingTop: 5, flexShrink: 0 }}>{group.label}</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, flex: 1 }}>
                         {group.items.map(f => <FilterChip key={f} label={f} selected={group.selected.includes(f)} onClick={() => toggle(group.selected, group.setter, f)} />)}
                       </div>
                     </div>
                   ))}
+
+                  {/* 광고비 예산 */}
+                  <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14, borderBottom: '1px solid var(--border)' }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', minWidth: 80, paddingTop: 5, flexShrink: 0 }}>광고비 예산</p>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                        {BUDGET_FILTERS.map(f => <FilterChip key={f} label={f} selected={budgetFilters.includes(f)} onClick={() => toggle(budgetFilters, setBudgetFilters, f)} />)}
+                      </div>
+                      {/* 최소/최대 직접 입력 */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <input value={budgetMin} onChange={e => setBudgetMin(e.target.value)}
+                          placeholder="최소 금액" type="number"
+                          style={{ width: 120, fontSize: 12, padding: '6px 10px', height: 'auto' }} />
+                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>~</span>
+                        <input value={budgetMax} onChange={e => setBudgetMax(e.target.value)}
+                          placeholder="최대 금액" type="number"
+                          style={{ width: 120, fontSize: 12, padding: '6px 10px', height: 'auto' }} />
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>원</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 카테고리 */}
+                  <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', minWidth: 80, paddingTop: 5, flexShrink: 0 }}>카테고리</p>
+                    <div style={{ flex: 1 }}>
+                      {/* 전체 카테고리 버튼 */}
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+                        <button onClick={() => { setAllCategorySelected(true); setSelectedCategories([]); }}
+                          style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${allCategorySelected ? '#FF2D55' : 'var(--border)'}`, background: allCategorySelected ? 'rgba(255,45,85,0.1)' : 'transparent', color: allCategorySelected ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, fontWeight: allCategorySelected ? 700 : 400, cursor: 'pointer' }}>
+                          전체 카테고리
+                        </button>
+                        {selectedCategories.map(cat => (
+                          <span key={cat} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '5px 10px', background: 'rgba(255,45,85,0.1)', border: '1px solid rgba(255,45,85,0.3)', borderRadius: 20, fontSize: 12, color: '#FF2D55', fontWeight: 600 }}>
+                            {cat}
+                            <button onClick={() => removeCategory(cat)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF2D55', padding: 0, display: 'flex', alignItems: 'center' }}>
+                              <X size={10} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      {/* 카테고리 검색 자동완성 */}
+                      <div style={{ position: 'relative' }}>
+                        <input value={categorySearchVal}
+                          onChange={e => handleCategoryInput(e.target.value)}
+                          onBlur={() => setTimeout(() => setShowCategoryAC(false), 150)}
+                          placeholder="카테고리를 검색하세요"
+                          style={{ width: '100%', fontSize: 13, padding: '8px 12px', height: 'auto', boxSizing: 'border-box' }} />
+                        {showCategoryAC && categoryACList.length > 0 && (
+                          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 50, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.3)', marginTop: 4 }}>
+                            {categoryACList.map(cat => (
+                              <button key={cat} onMouseDown={() => addCategory(cat)}
+                                style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '9px 14px', border: 'none', borderBottom: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: 13, color: 'var(--text)', textAlign: 'left' }}>
+                                <Search size={11} color="var(--text-muted)" />
+                                {cat}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
