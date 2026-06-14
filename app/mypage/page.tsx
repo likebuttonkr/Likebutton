@@ -1,4 +1,5 @@
 'use client';
+import ConfirmModal from '../components/ConfirmModal';
 import { showToast } from '../components/Toast';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -28,6 +29,9 @@ export default function MyPage() {
   const [pwError, setPwError] = useState('');
   const [pwLoading, setPwLoading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{open:boolean; title:string; message:string; onConfirm:()=>void}>({open:false,title:'',message:'',onConfirm:()=>{}});
+  const openConfirm = (title:string, message:string, onConfirm:()=>void) => setConfirmModal({open:true,title,message,onConfirm});
+  const closeConfirm = () => setConfirmModal(m=>({...m,open:false}));
 
   // 서비스 관리
   const [services, setServices] = useState<any[]>([]);
@@ -143,10 +147,13 @@ export default function MyPage() {
     setServiceLoading(false);
   };
 
-  const handleDeleteService = async (id: number) => {
-    if (!confirm('서비스를 삭제하시겠어요?')) return;
-    await supabase.from('services').delete().eq('id', id);
-    await loadServices(user.id);
+  const handleDeleteService = (id: number) => {
+    openConfirm('서비스 삭제', '이 서비스를 삭제하시겠어요?\n삭제 후 복구가 불가능합니다.', async () => {
+      await supabase.from('services').delete().eq('id', id);
+      await loadServices(user.id);
+      showToast('서비스가 삭제되었습니다.', 'success');
+      closeConfirm();
+    });
   };
 
   const handleDeleteFavorite = async (id: number) => {
@@ -316,7 +323,7 @@ export default function MyPage() {
 
               <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <button style={{ fontSize: 13, color: '#FF2D55', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-                  onClick={() => { if (confirm('정말 탈퇴하시겠어요? 모든 데이터가 삭제됩니다.')) showToast('회원탈퇴가 처리되었습니다.', 'success'); }}>
+                  onClick={() => openConfirm('회원탈퇴', '정말 탈퇴하시겠어요?\n모든 데이터가 삭제되며 복구가 불가능합니다.', () => { showToast('회원탈퇴가 처리되었습니다.', 'success'); closeConfirm(); })}>
                   회원탈퇴
                 </button>
                 {editMode && (
@@ -772,6 +779,15 @@ export default function MyPage() {
         </main>
       </div>
       <Footer />
+      <ConfirmModal
+        isOpen={confirmModal.open}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText="삭제"
+        confirmColor="#FF2D55"
+        onConfirm={confirmModal.onConfirm}
+        onCancel={closeConfirm}
+      />
     </div>
   );
 }
