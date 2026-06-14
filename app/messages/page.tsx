@@ -1,6 +1,7 @@
 'use client';
 import { showToast } from '../components/Toast';
 import { useState, useEffect, useRef } from 'react';
+import { supabase } from '../lib/supabase';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Send, AlertTriangle, Search, Paperclip, Shield, X, ChevronRight } from 'lucide-react';
@@ -64,6 +65,24 @@ export default function MessagesPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [allMessages, selectedChat]);
+
+  // 실제 메시지 DB에서 로드
+  useEffect(() => {
+    const loadMessages = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data } = await supabase
+        .from('messages')
+        .select('*')
+        .or(`sender_id.eq.${session.user.id},receiver_id.eq.${session.user.id}`)
+        .order('created_at', { ascending: true });
+      if (data && data.length > 0) {
+        // 실제 메시지가 있으면 반영 (추후 확장)
+        console.log('DB messages loaded:', data.length);
+      }
+    };
+    loadMessages();
+  }, []);
 
   // Supabase Realtime 메시지 구독
   useEffect(() => {

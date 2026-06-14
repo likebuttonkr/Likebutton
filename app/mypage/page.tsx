@@ -515,20 +515,7 @@ export default function MyPage() {
 
           {/* 프로젝트 관리 */}
           {activeMenu === 'projects' && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>프로젝트 관리</h2>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-                {['유튜브', '인스타그램', '틱톡'].map((t, i) => (
-                  <button key={t} style={{ padding: '7px 16px', borderRadius: 8, border: i === 0 ? 'none' : '1px solid var(--border)', background: i === 0 ? 'rgba(255,45,85,0.1)' : 'transparent', color: i === 0 ? '#FF2D55' : 'var(--text-muted)', fontSize: 13, fontWeight: i === 0 ? 700 : 400, cursor: 'pointer' }}>{t}</button>
-                ))}
-              </div>
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-                <p style={{ fontSize: 36, marginBottom: 12 }}>📂</p>
-                <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: 'var(--text)' }}>진행중인 프로젝트가 없어요</p>
-                <p style={{ fontSize: 13, marginBottom: 20 }}>{isInfluencer ? '광고주가 광고를 요청하면 여기서 확인할 수 있어요' : '인플루언서를 찾아 광고를 요청해보세요'}</p>
-                {!isInfluencer && <Link href="/search" style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14 }}>인플루언서 찾기</Link>}
-              </div>
-            </div>
+            <ProjectManager userId={user?.id} isInfluencer={isInfluencer} isMobile={isMobile} />
           )}
 
           {/* 수익 관리 */}
@@ -903,6 +890,92 @@ function RevenueManager({ userId, isMobile }: { userId: string; isMobile: boolea
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// 프로젝트 관리 컴포넌트 - 실제 DB 연동
+function ProjectManager({ userId, isInfluencer, isMobile }: { userId: string; isInfluencer: boolean; isMobile: boolean }) {
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterPlatform, setFilterPlatform] = useState('전체');
+  const [filterStatus, setFilterStatus] = useState('전체');
+
+  useEffect(() => {
+    if (!userId) return;
+    const load = async () => {
+      const column = isInfluencer ? 'influencer_id' : 'advertiser_id';
+      const { data } = await supabase.from('projects').select('*').eq(column, userId).order('created_at', { ascending: false });
+      setProjects(data || []);
+      setLoading(false);
+    };
+    load();
+  }, [userId, isInfluencer]);
+
+  const STATUS_COLOR: Record<string, string> = {
+    '광고 요청': '#FFB800', '입금 대기': '#FFB800',
+    '광고 기획안': '#5B8DEF', '영상 피드백': '#8B5CF6',
+    '광고 진행': '#FF6B35', '광고 완료': '#00C896',
+    '광고 취소': '#FF2D55',
+  };
+
+  const filtered = projects.filter(p => {
+    const matchPlatform = filterPlatform === '전체' || p.platform === filterPlatform.toLowerCase();
+    const matchStatus = filterStatus === '전체' || p.status === filterStatus;
+    return matchPlatform && matchStatus;
+  });
+
+  return (
+    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 800 }}>프로젝트 관리</h2>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <select value={filterPlatform} onChange={e => setFilterPlatform(e.target.value)}
+            style={{ padding: '6px 10px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 12, cursor: 'pointer' }}>
+            {['전체', '유튜브', '인스타그램', '틱톡'].map(p => <option key={p}>{p}</option>)}
+          </select>
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+            style={{ padding: '6px 10px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 12, cursor: 'pointer' }}>
+            {['전체', '광고 요청', '입금 대기', '광고 기획안', '영상 피드백', '광고 진행', '광고 완료', '광고 취소'].map(s => <option key={s}>{s}</option>)}
+          </select>
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>로딩 중...</div>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+          <p style={{ fontSize: 36, marginBottom: 12 }}>📂</p>
+          <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: 'var(--text)' }}>프로젝트가 없어요</p>
+          <p style={{ fontSize: 13, marginBottom: 20 }}>{isInfluencer ? '광고주가 광고를 요청하면 여기서 확인할 수 있어요' : '인플루언서를 찾아 광고를 요청해보세요'}</p>
+          {!isInfluencer && <Link href="/search" style={{ padding: '10px 24px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14 }}>인플루언서 찾기</Link>}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {filtered.map(proj => (
+            <Link key={proj.id} href={`/project/${proj.id}`} style={{ textDecoration: 'none', display: 'block', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px 20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', gap: 6, marginBottom: 6, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 11, background: 'var(--bg-card)', padding: '2px 8px', borderRadius: 20, color: 'var(--text-muted)' }}>{proj.platform || 'youtube'}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: STATUS_COLOR[proj.status] || 'var(--text-muted)', background: `${STATUS_COLOR[proj.status] || '#888'}18`, padding: '2px 8px', borderRadius: 20 }}>{proj.status}</span>
+                  </div>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{proj.title}</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {proj.ad_type && `${proj.ad_type} · `}
+                    {new Date(proj.created_at).toLocaleDateString('ko-KR')} 요청
+                  </p>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <p style={{ fontSize: 16, fontWeight: 900, color: '#FF2D55' }}>{proj.budget?.toLocaleString() || '0'}원</p>
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>상세 보기 →</p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 12 }}>총 {filtered.length}건</p>
     </div>
   );
 }
