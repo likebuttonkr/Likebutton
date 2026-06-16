@@ -144,7 +144,13 @@ export default function Header({ isLoggedIn: isLoggedInProp = false, userType: u
               {item.label}
             </Link>
           ))}
-          {!isLoggedIn && (
+          {isLoggedIn ? (
+            <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+              <Link href="/mypage" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: '12px', textAlign: 'center', border: '1px solid var(--border)', borderRadius: 10, color: 'var(--text)', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>마이페이지</Link>
+              <button onClick={async () => { await supabase.auth.signOut(); setMobileOpen(false); window.location.href = '/'; }}
+                style={{ flex: 1, padding: '12px', textAlign: 'center', background: 'rgba(255,45,85,0.1)', border: '1px solid rgba(255,45,85,0.3)', borderRadius: 10, color: '#FF2D55', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>로그아웃</button>
+            </div>
+          ) : (
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               <Link href="/login" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: '12px', textAlign: 'center', border: '1px solid var(--border)', borderRadius: 10, color: 'var(--text)', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>로그인</Link>
               <Link href="/signup" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: '12px', textAlign: 'center', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', borderRadius: 10, color: 'white', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>회원가입</Link>

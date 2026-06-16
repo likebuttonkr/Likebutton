@@ -1,6 +1,14 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ToastContainer } from './components/Toast';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#0f0f1a',
+};
 
 export const metadata: Metadata = {
   title: '라이크버튼 - 인플루언서 마케팅 플랫폼',

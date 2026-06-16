@@ -119,7 +119,7 @@ function EventManager() {
       </div>
       {showForm && (
         <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 10, padding: 16, marginBottom: 16 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 10 }}>
             <div><label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>제목</label><input value={form.title} onChange={e => setForm(f => ({...f, title: e.target.value}))} placeholder="이벤트 제목" style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} /></div>
             <div><label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>시작일</label><input type="date" value={form.start_date} onChange={e => setForm(f => ({...f, start_date: e.target.value}))} style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} /></div>
             <div><label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>종료일</label><input type="date" value={form.end_date} onChange={e => setForm(f => ({...f, end_date: e.target.value}))} style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} /></div>

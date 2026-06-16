@@ -44,6 +44,14 @@ export default function AdminPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [searchQ, setSearchQ] = useState('');
   const [userFilter, setUserFilter] = useState('전체');
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 900);
+    check(); window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   useEffect(() => {
     const auth = sessionStorage.getItem('admin_auth');
@@ -114,8 +122,32 @@ export default function AdminPage() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
+      {/* Mobile top bar */}
+      {isMobile && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 52, background: 'var(--bg-card)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 14px', zIndex: 60 }}>
+          <button onClick={() => setMobileNavOpen(true)} style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', padding: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <span style={{ width: 18, height: 2, background: 'var(--text)', borderRadius: 1 }} />
+            <span style={{ width: 18, height: 2, background: 'var(--text)', borderRadius: 1 }} />
+            <span style={{ width: 18, height: 2, background: 'var(--text)', borderRadius: 1 }} />
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 22, height: 22, background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11 }}>♥</div>
+            <p style={{ fontSize: 13, fontWeight: 800 }}>{NAV_ITEMS.find(n => n.id === activeTab)?.label || '관리자'}</p>
+          </div>
+          <div style={{ width: 30 }} />
+        </div>
+      )}
+
+      {/* Mobile overlay */}
+      {isMobile && mobileNavOpen && (
+        <div onClick={() => setMobileNavOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 70 }} />
+      )}
+
       {/* Sidebar */}
-      <aside style={{ width: 220, background: 'var(--bg-card)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 50, overflowY: 'auto' }}>
+      <aside style={isMobile ? {
+        width: 240, background: 'var(--bg-card)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column',
+        position: 'fixed', top: 0, left: mobileNavOpen ? 0 : -260, bottom: 0, zIndex: 80, overflowY: 'auto', transition: 'left 0.25s ease',
+      } : { width: 220, background: 'var(--bg-card)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 50, overflowY: 'auto' }}>
         <div style={{ padding: '20px 16px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 30, height: 30, background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>♥</div>
@@ -132,7 +164,7 @@ export default function AdminPage() {
             const isActive = activeTab === item.id;
             return (
               <div key={item.id}>
-                <button onClick={() => { if (item.sub) { toggleNav(item.id); if (!isExpanded) { setActiveTab(item.id); setActiveSub(item.sub[0]); } } else { setActiveTab(item.id); setActiveSub(''); } }}
+                <button onClick={() => { if (item.sub) { toggleNav(item.id); if (!isExpanded) { setActiveTab(item.id); setActiveSub(item.sub[0]); } } else { setActiveTab(item.id); setActiveSub(''); } if (isMobile && !item.sub) setMobileNavOpen(false); }}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '9px 10px', border: 'none', cursor: 'pointer', borderRadius: 8, marginBottom: 2, background: isActive && !item.sub ? 'rgba(255,45,85,0.1)' : 'transparent', color: isActive && !item.sub ? '#FF2D55' : 'var(--text-muted)', textAlign: 'left' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <Icon size={14} />
@@ -146,7 +178,7 @@ export default function AdminPage() {
                 {item.sub && isExpanded && (
                   <div style={{ paddingLeft: 22, marginBottom: 4 }}>
                     {item.sub.map(sub => (
-                      <button key={sub} onClick={() => { setActiveTab(item.id); setActiveSub(sub); }}
+                      <button key={sub} onClick={() => { setActiveTab(item.id); setActiveSub(sub); if (isMobile) setMobileNavOpen(false); }}
                         style={{ display: 'block', width: '100%', padding: '7px 10px', border: 'none', cursor: 'pointer', borderRadius: 6, marginBottom: 1, background: activeTab === item.id && activeSub === sub ? 'rgba(255,45,85,0.08)' : 'transparent', color: activeTab === item.id && activeSub === sub ? '#FF2D55' : 'var(--text-muted)', textAlign: 'left', fontSize: 12, fontWeight: activeTab === item.id && activeSub === sub ? 600 : 400 }}>
                         {sub}
                       </button>
@@ -164,7 +196,7 @@ export default function AdminPage() {
       </aside>
 
       {/* Main */}
-      <main style={{ marginLeft: 220, flex: 1, padding: '28px 32px', minHeight: '100vh' }}>
+      <main style={isMobile ? { flex: 1, padding: '64px 14px 24px', minHeight: '100vh', width: '100%', overflowX: 'hidden' } : { marginLeft: 220, flex: 1, padding: '28px 32px', minHeight: '100vh' }}>
 
         {/* 대시보드 */}
         {activeTab === 'dashboard' && (
@@ -388,7 +420,7 @@ function SettingsPanel({ activeSub }: { activeSub: string }) {
       <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16 }}>메인 배너 관리</h3>
       {banners.map((b, i) => (
         <div key={i} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 10, padding: 14, marginBottom: 12 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: 10, marginBottom: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 8 }}>
             <div><label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 3 }}>노출 순서</label>
               <select value={b.order} onChange={e => setBanners(bans => bans.map((bn, j) => j === i ? {...bn, order: parseInt(e.target.value)} : bn))}
                 style={{ width: '100%', padding: '7px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text)', fontSize: 12, cursor: 'pointer' }}>
@@ -421,7 +453,7 @@ function SettingsPanel({ activeSub }: { activeSub: string }) {
     <div>
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 20, marginBottom: 16 }}>
         <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>이메일 발송</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 12 }}>
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>발송 대상</label>
             <select value={emailTarget} onChange={e => setEmailTarget(e.target.value)}
