@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase';
 import { BarChart2, Users, Briefcase, MessageSquare, Tag, CreditCard, Download, Settings, Eye, EyeOff, TrendingUp, Star, FileText, ChevronDown, ChevronRight, Search } from 'lucide-react';
 import { NoticeManager, EventManager, FAQManager, QnAManager, TermsManager } from './components/BoardManager';
 import AdvertiserManager from './components/AdvertiserManager';
+import InfluencerManager from './components/InfluencerManager';
+import ReviewManager from './components/ReviewManager';
 import CouponManager from './components/CouponManager';
 import PaymentManager from './components/PaymentManager';
 import WithdrawalManager from './components/WithdrawalManager';
@@ -232,43 +234,7 @@ export default function AdminPage() {
         )}
 
         {/* 인플루언서 관리 */}
-        {activeTab === 'influencers' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ fontSize: 17, fontWeight: 800 }}>인플루언서 관리</h2>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <div style={{ position: 'relative' }}>
-                  <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="이메일, 이름 검색..." style={{ paddingLeft: 30, fontSize: 13, padding: '8px 12px 8px 30px', height: 'auto', width: 220 }} />
-                </div>
-              </div>
-            </div>
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 700 }}>
-                <thead><tr style={{ background: 'var(--bg-card2)', borderBottom: '1px solid var(--border)' }}>
-                  {['No.', '아이디', '이름', '채널명', '가입일', '상태'].map(h =>
-                    <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 700, fontSize: 12, color: 'var(--text-muted)' }}>{h}</th>)}
-                </tr></thead>
-                <tbody>
-                  {users.filter(u => u.user_type === 'influencer' && (!searchQ || u.email?.includes(searchQ) || u.name?.includes(searchQ))).length === 0
-                    ? <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)' }}>인플루언서가 없어요</td></tr>
-                    : users.filter(u => u.user_type === 'influencer' && (!searchQ || u.email?.includes(searchQ) || u.name?.includes(searchQ))).map((u, i) => (
-                      <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{i + 1}</td>
-                        <td style={{ padding: '10px 14px', fontSize: 12 }}>{u.email}</td>
-                        <td style={{ padding: '10px 14px', fontWeight: 600 }}>{u.name || '-'}</td>
-                        <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{u.channel_name || '-'}</td>
-                        <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text-muted)' }}>{new Date(u.created_at).toLocaleDateString('ko-KR')}</td>
-                        <td style={{ padding: '10px 14px' }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: '#00C896', background: 'rgba(0,200,150,0.1)', padding: '3px 8px', borderRadius: 20 }}>{u.account_status || '정상'}</span>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+        {activeTab === 'influencers' && <InfluencerManager />}
 
         {/* 광고주 관리 */}
         {activeTab === 'advertisers' && <AdvertiserManager />}
@@ -309,15 +275,7 @@ export default function AdminPage() {
             {activeSub === 'FAQ' && <FAQManager />}
             {activeSub === 'Q&A' && <QnAManager />}
             {activeSub === '약관' && <TermsManager />}
-            {activeSub === '리뷰' && (
-              <div>
-                <h2 style={{ fontSize: 17, fontWeight: 800, marginBottom: 16 }}>리뷰 관리</h2>
-                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                  <p style={{ fontSize: 36, marginBottom: 12 }}>⭐</p>
-                  <p style={{ fontSize: 14 }}>프로젝트 완료 후 리뷰가 등록되면 여기서 관리할 수 있어요</p>
-                </div>
-              </div>
-            )}
+            {activeSub === '리뷰' && <ReviewManager />}
           </div>
         )}
 
@@ -492,11 +450,132 @@ function SettingsPanel({ activeSub }: { activeSub: string }) {
     </div>
   );
 
+  if (activeSub === '카테고리') return <CategorySettings />;
+  if (activeSub === '서비스') return <ServiceSettings />;
+
   return (
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '48px', textAlign: 'center' }}>
       <p style={{ fontSize: 36, marginBottom: 12 }}>⚙️</p>
       <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{activeSub} 설정</p>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>카테고리/서비스 설정은 데이터가 쌓이면 추가 개발될 예정이에요</p>
+      <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>준비 중이에요</p>
+    </div>
+  );
+}
+
+// 카테고리 관리
+function CategorySettings() {
+  const INITIAL = [
+    { id: 1, name: '뷰티/패션', sub: ['뷰티', '패션', '스킨케어', '헤어'] },
+    { id: 2, name: '음식/요리', sub: ['먹방', '요리', '베이킹', '카페투어'] },
+    { id: 3, name: '게임', sub: ['FPS', 'RPG', '모바일게임', '스트리밍'] },
+    { id: 4, name: '여행', sub: ['국내여행', '해외여행', '캠핑', '맛집'] },
+    { id: 5, name: '운동', sub: ['헬스', '요가', '필라테스', '러닝'] },
+    { id: 6, name: 'IT/테크', sub: ['스마트폰', '노트북', '앱리뷰', '개발'] },
+    { id: 7, name: '교육', sub: ['영어', '자격증', '독서', '공부'] },
+    { id: 8, name: '라이프스타일', sub: ['육아', '반려동물', '인테리어', '재테크'] },
+  ];
+  const [categories, setCategories] = useState(INITIAL);
+  const [newCat, setNewCat] = useState('');
+  const [editId, setEditId] = useState<number|null>(null);
+  const [editName, setEditName] = useState('');
+  const [newSub, setNewSub] = useState<Record<number,string>>({});
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <input value={newCat} onChange={e => setNewCat(e.target.value)} placeholder="새 대분류 카테고리 이름" style={{ flex: 1, fontSize: 13 }} />
+        <button onClick={() => { if (!newCat.trim()) return; setCategories(c => [...c, { id: Date.now(), name: newCat, sub: [] }]); setNewCat(''); showToast('카테고리가 추가되었습니다.', 'success'); }}
+          style={{ padding: '8px 16px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>
+          + 추가
+        </button>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {categories.map((cat, idx) => (
+          <div key={cat.id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              {editId === cat.id ? (
+                <div style={{ display: 'flex', gap: 6, flex: 1 }}>
+                  <input value={editName} onChange={e => setEditName(e.target.value)} style={{ flex: 1, fontSize: 13 }} />
+                  <button onClick={() => { setCategories(c => c.map(item => item.id === cat.id ? {...item, name: editName} : item)); setEditId(null); showToast('수정되었습니다.', 'success'); }}
+                    style={{ padding: '5px 12px', background: 'rgba(0,200,150,0.1)', border: '1px solid rgba(0,200,150,0.3)', color: '#00C896', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>저장</button>
+                  <button onClick={() => setEditId(null)} style={{ padding: '5px 10px', background: 'var(--bg-card2)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>취소</button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button onClick={() => idx > 0 && setCategories(c => { const n=[...c]; [n[idx-1],n[idx]]=[n[idx],n[idx-1]]; return n; })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 12 }}>▲</button>
+                    <button onClick={() => idx < categories.length-1 && setCategories(c => { const n=[...c]; [n[idx],n[idx+1]]=[n[idx+1],n[idx]]; return n; })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 12 }}>▼</button>
+                  </div>
+                  <span style={{ fontWeight: 700, fontSize: 14 }}>{cat.name}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{cat.sub.length}개 소분류</span>
+                </div>
+              )}
+              {editId !== cat.id && (
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => { setEditId(cat.id); setEditName(cat.name); }}
+                    style={{ padding: '4px 10px', background: 'var(--bg-card2)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: 6, cursor: 'pointer', fontSize: 11 }}>수정</button>
+                  <button onClick={() => { setCategories(c => c.filter(item => item.id !== cat.id)); showToast('삭제되었습니다.', 'success'); }}
+                    style={{ padding: '4px 10px', background: 'rgba(255,45,85,0.08)', border: '1px solid rgba(255,45,85,0.2)', color: '#FF2D55', borderRadius: 6, cursor: 'pointer', fontSize: 11 }}>삭제</button>
+                </div>
+              )}
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+              {cat.sub.map(s => (
+                <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 20, fontSize: 12 }}>
+                  {s}
+                  <button onClick={() => setCategories(c => c.map(item => item.id === cat.id ? {...item, sub: item.sub.filter(x => x !== s)} : item))}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 11, padding: 0, lineHeight: 1 }}>×</button>
+                </span>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input value={newSub[cat.id] || ''} onChange={e => setNewSub(s => ({...s, [cat.id]: e.target.value}))}
+                placeholder="소분류 추가" style={{ flex: 1, fontSize: 12, padding: '5px 10px', height: 'auto' }}
+                onKeyDown={e => { if (e.key === 'Enter' && newSub[cat.id]?.trim()) { setCategories(c => c.map(item => item.id === cat.id ? {...item, sub: [...item.sub, newSub[cat.id]]} : item)); setNewSub(s => ({...s, [cat.id]: ''})); }}} />
+              <button onClick={() => { if (!newSub[cat.id]?.trim()) return; setCategories(c => c.map(item => item.id === cat.id ? {...item, sub: [...item.sub, newSub[cat.id]]} : item)); setNewSub(s => ({...s, [cat.id]: ''})); }}
+                style={{ padding: '5px 12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', fontSize: 12, color: 'var(--text)', whiteSpace: 'nowrap' }}>+ 소분류</button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={() => showToast('카테고리 설정이 저장되었습니다.', 'success')}
+          style={{ padding: '10px 24px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>
+          전체 저장
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// 서비스 기본 문구
+function ServiceSettings() {
+  const [texts, setTexts] = useState({
+    serviceIntro: '안녕하세요! 저는 [카테고리] 전문 크리에이터입니다.\n구독자 [N]명과 함께 다양한 콘텐츠를 제작하고 있어요.\n광고 문의는 편하게 연락주세요!',
+    processDesc: '1. 광고 요청 확인\n2. 기획안 작성 및 공유\n3. 촬영 및 편집\n4. 피드백 반영\n5. 최종 업로드',
+    refundPolicy: '광고 영상 제작 시작 전: 전액 환불\n광고 영상 제작 중: 50% 환불\n광고 영상 제작 완료 후: 환불 불가',
+  });
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {[
+        { key: 'serviceIntro', label: '서비스 소개 기본 문구', placeholder: '서비스 소개 기본 문구...' },
+        { key: 'processDesc', label: '광고 진행 과정 기본 문구', placeholder: '진행 과정 설명...' },
+        { key: 'refundPolicy', label: '환불 정책 기본 문구', placeholder: '환불 정책...' },
+      ].map(item => (
+        <div key={item.key} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px' }}>
+          <label style={{ fontSize: 13, fontWeight: 700, display: 'block', marginBottom: 8 }}>{item.label}</label>
+          <textarea value={texts[item.key as keyof typeof texts]}
+            onChange={e => setTexts(t => ({...t, [item.key]: e.target.value}))}
+            style={{ width: '100%', minHeight: 100, padding: '10px 12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }} />
+        </div>
+      ))}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={() => showToast('서비스 기본 문구가 저장되었습니다.', 'success')}
+          style={{ padding: '10px 24px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>
+          저장
+        </button>
+      </div>
     </div>
   );
 }

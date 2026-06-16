@@ -2,12 +2,29 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Search } from 'lucide-react';
+import { showToast } from '../../components/Toast';
 
 export default function WithdrawalManager() {
   const [list, setList] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('전체');
   const [selected, setSelected] = useState<number[]>([]);
+
+  const downloadExcel = () => {
+    const header = ['인플루언서', '출금신청금액', '입금은행', '계좌번호', '예금주', '상태', '신청일시', '완료일시'];
+    const rows = list.map(w => [
+      w.influencer_id || '-', w.amount || 0, w.bank_name || '-',
+      w.account_number || '-', w.account_holder || '-',
+      w.status || '-', new Date(w.created_at).toLocaleString('ko-KR'),
+      w.completed_at ? new Date(w.completed_at).toLocaleString('ko-KR') : '-',
+    ]);
+    const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `출금내역_${new Date().toLocaleDateString('ko-KR')}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    showToast('엑셀 파일이 다운로드되었습니다.', 'success');
+  };
 
   useEffect(() => { load(); }, []);
   const load = async () => {
@@ -31,7 +48,9 @@ export default function WithdrawalManager() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h2 style={{ fontSize: 17, fontWeight: 800 }}>출금 관리</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h2 style={{ fontSize: 17, fontWeight: 800 }}>출금 관리</h2>
+        </div>
         <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
           style={{ padding: '6px 10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 12, cursor: 'pointer' }}>
           {['전체', '출금 신청', '출금 완료'].map(s => <option key={s}>{s}</option>)}

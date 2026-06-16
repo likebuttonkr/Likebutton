@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Search } from 'lucide-react';
+import { showToast } from '../../components/Toast';
 
 export default function PaymentManager() {
   const [list, setList] = useState<any[]>([]);
@@ -9,7 +10,23 @@ export default function PaymentManager() {
   const [filterStatus, setFilterStatus] = useState('전체');
   const [selected, setSelected] = useState<number[]>([]);
 
-  useEffect(() => { load(); }, []);
+  const downloadExcel = () => {
+    const header = ['주문번호', '인플루언서', '구분', '제목', '광고주', '광고금액', '쿠폰', '결제금액', '상태', '결제일시'];
+    const rows = list.map(p => [
+      `#${String(p.id).padStart(6,'0')}`, p.influencer_id || '-', p.platform || '-',
+      p.title || '-', p.advertiser_id || '-',
+      p.budget || 0, p.coupon_discount || 0,
+      (p.budget || 0) - (p.coupon_discount || 0),
+      p.status || '-', new Date(p.created_at).toLocaleString('ko-KR'),
+    ]);
+    const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `결제내역_${new Date().toLocaleDateString('ko-KR')}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    showToast('엑셀 파일이 다운로드되었습니다.', 'success');
+  };
+
   const load = async () => {
     const { data } = await supabase.from('payments').select('*, profiles!payments_advertiser_id_fkey(name, company)').order('created_at', { ascending: false });
     setList(data || []);
@@ -20,6 +37,8 @@ export default function PaymentManager() {
   };
   const toggleSelect = (id: number) => setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
   const toggleAll = () => setSelected(s => s.length === filtered.length ? [] : filtered.map(p => p.id));
+
+  useEffect(() => { load(); }, []);
 
   const filtered = list.filter(p => {
     const q = search.toLowerCase();
@@ -37,6 +56,9 @@ export default function PaymentManager() {
             style={{ padding: '6px 10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 12, cursor: 'pointer' }}>
             {['전체', '입금 대기', '입금 완료'].map(s => <option key={s}>{s}</option>)}
           </select>
+          <button onClick={downloadExcel} style={{ padding: '6px 12px', background: 'rgba(0,200,150,0.1)', border: '1px solid rgba(0,200,150,0.3)', borderRadius: 8, color: '#00C896', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+            ⬇ 엑셀
+          </button>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
