@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -66,23 +66,34 @@ const TERMS = {
 
 export default function TermsPage() {
   const [active, setActive] = useState<'service' | 'privacy' | 'finance'>('service');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check(); window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
   const term = TERMS[active];
 
   return (
     <div>
       <Header />
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px' }}>
-        <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 24 }}>약관</h1>
-        <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 24, alignItems: 'start' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', position: 'sticky', top: 88 }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '20px 16px' : '32px 24px' }}>
+        <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 900, marginBottom: 20 }}>약관</h1>
+        <div style={{ display: isMobile ? 'block' : 'grid', gridTemplateColumns: isMobile ? undefined : '200px 1fr', gap: isMobile ? 0 : 24, alignItems: 'start' }}>
+          <div style={isMobile ? {
+            display: 'flex', overflowX: 'auto', gap: 6, marginBottom: 14, WebkitOverflowScrolling: 'touch',
+          } : { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', position: 'sticky', top: 88 }}>
             {[['service', '서비스 이용약관'], ['privacy', '개인정보 취급방침'], ['finance', '전자금융거래 이용약관']].map(([val, label]) => (
               <button key={val} onClick={() => setActive(val as any)}
-                style={{ display: 'block', width: '100%', padding: '14px 16px', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 13, fontWeight: active === val ? 700 : 400, background: active === val ? 'rgba(255,45,85,0.08)' : 'transparent', color: active === val ? '#FF2D55' : 'var(--text-muted)', borderLeft: active === val ? '3px solid #FF2D55' : '3px solid transparent', borderBottom: '1px solid var(--border)' }}>
+                style={isMobile ? {
+                  flexShrink: 0, padding: '8px 14px', borderRadius: 20, border: `1px solid ${active === val ? '#FF2D55' : 'var(--border)'}`, background: active === val ? 'rgba(255,45,85,0.1)' : 'var(--bg-card)', color: active === val ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, fontWeight: active === val ? 700 : 400, whiteSpace: 'nowrap', cursor: 'pointer',
+                } : { display: 'block', width: '100%', padding: '14px 16px', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 13, fontWeight: active === val ? 700 : 400, background: active === val ? 'rgba(255,45,85,0.08)' : 'transparent', color: active === val ? '#FF2D55' : 'var(--text-muted)', borderLeft: active === val ? '3px solid #FF2D55' : '3px solid transparent', borderBottom: '1px solid var(--border)' }}>
                 {label}
               </button>
             ))}
           </div>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '18px' : '28px' }}>
             <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>{term.title}</h2>
             <pre style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8, whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{term.content}</pre>
           </div>

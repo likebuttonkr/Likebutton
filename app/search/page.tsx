@@ -246,7 +246,7 @@ function SearchContent() {
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '220px 1fr', gap: 16 }}>
-          {/* Left sidebar - category tree */}
+          {/* Left sidebar - category tree (desktop only) */}
           {!isMobile && <aside>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', position: 'sticky', top: 88 }}>
               {TOP_TABS.map(tab => (
@@ -282,6 +282,23 @@ function SearchContent() {
 
           {/* Main content */}
           <div>
+            {/* Mobile category chips */}
+            {isMobile && (
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 14, paddingBottom: 4, WebkitOverflowScrolling: 'touch' }}>
+                {TOP_TABS.map(tab => (
+                  <button key={tab} onClick={() => { setTopTab(tab); setSelectedCategory(''); }}
+                    style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 20, border: `1px solid ${topTab === tab && !selectedCategory ? '#FF2D55' : 'var(--border)'}`, background: topTab === tab && !selectedCategory ? 'rgba(255,45,85,0.1)' : 'var(--bg-card)', color: topTab === tab && !selectedCategory ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, fontWeight: topTab === tab && !selectedCategory ? 700 : 400, whiteSpace: 'nowrap' }}>
+                    {tab === 'Top 100' ? '🏆' : tab === '급상승 인플루언서' ? '🚀' : '📋'} {tab}
+                  </button>
+                ))}
+                {Object.entries(CATEGORIES).map(([cat, { icon }]) => (
+                  <button key={cat} onClick={() => { setSelectedCategory(cat); setTopTab(''); }}
+                    style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 20, border: `1px solid ${selectedCategory === cat ? '#FF2D55' : 'var(--border)'}`, background: selectedCategory === cat ? 'rgba(255,45,85,0.1)' : 'var(--bg-card)', color: selectedCategory === cat ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, fontWeight: selectedCategory === cat ? 700 : 400, whiteSpace: 'nowrap' }}>
+                    {icon} {cat}
+                  </button>
+                ))}
+              </div>
+            )}
             {/* Search bar */}
             <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
               <div style={{ flex: 1, position: 'relative' }}>
@@ -315,23 +332,23 @@ function SearchContent() {
             {filterOpen && (
               <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, marginBottom: 16, overflow: 'hidden' }}>
                 {/* 필터 헤더 */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '12px 14px' : '14px 20px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card2)', flexWrap: 'wrap', gap: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <Filter size={15} color="#FF2D55" />
                     <p style={{ fontWeight: 700, fontSize: 14 }}>필터</p>
                     {totalFilters > 0 && <span style={{ background: '#FF2D55', color: 'white', borderRadius: 20, padding: '1px 8px', fontSize: 11, fontWeight: 700 }}>{totalFilters}개 선택</span>}
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={resetFilters} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>
+                    <button onClick={resetFilters} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>
                       <RotateCcw size={11} /> 초기화
                     </button>
-                    <button onClick={() => setFilterOpen(false)} style={{ padding: '6px 14px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', border: 'none', borderRadius: 8, color: 'white', fontSize: 12, cursor: 'pointer', fontWeight: 700 }}>
+                    <button onClick={() => setFilterOpen(false)} style={{ padding: '6px 12px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', border: 'none', borderRadius: 8, color: 'white', fontSize: 12, cursor: 'pointer', fontWeight: 700 }}>
                       적용하기
                     </button>
                   </div>
                 </div>
                 {/* 필터 내용 */}
-                <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+                <div style={{ padding: isMobile ? '14px' : '16px 20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
                   {/* 구독자 수 */}
                   {[
                     { label: '구독자 수', items: SUBSCRIBER_FILTERS, selected: subFilters, setter: setSubFilters },
@@ -339,8 +356,8 @@ function SearchContent() {
                     { label: '구독자 성별', items: GENDER_FILTERS, selected: genderFilters, setter: setGenderFilters },
                     { label: '예상 조회수', items: VIEW_FILTERS, selected: viewFilters, setter: setViewFilters },
                   ].map(group => (
-                    <div key={group.label} style={{ display: 'flex', gap: 16, alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14, borderBottom: '1px solid var(--border)' }}>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', minWidth: 80, paddingTop: 5, flexShrink: 0 }}>{group.label}</p>
+                    <div key={group.label} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 8 : 16, alignItems: isMobile ? 'stretch' : 'flex-start', paddingTop: 14, paddingBottom: 14, borderBottom: '1px solid var(--border)' }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', minWidth: isMobile ? undefined : 80, paddingTop: isMobile ? 0 : 5, flexShrink: 0 }}>{group.label}</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, flex: 1 }}>
                         {group.items.map(f => <FilterChip key={f} label={f} selected={group.selected.includes(f)} onClick={() => toggle(group.selected, group.setter, f)} />)}
                       </div>
@@ -348,8 +365,8 @@ function SearchContent() {
                   ))}
 
                   {/* 광고비 예산 */}
-                  <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14, borderBottom: '1px solid var(--border)' }}>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', minWidth: 80, paddingTop: 5, flexShrink: 0 }}>광고비 예산</p>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 8 : 16, alignItems: isMobile ? 'stretch' : 'flex-start', paddingTop: 14, paddingBottom: 14, borderBottom: '1px solid var(--border)' }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', minWidth: isMobile ? undefined : 80, paddingTop: isMobile ? 0 : 5, flexShrink: 0 }}>광고비 예산</p>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
                         {BUDGET_FILTERS.map(f => <FilterChip key={f} label={f} selected={budgetFilters.includes(f)} onClick={() => toggle(budgetFilters, setBudgetFilters, f)} />)}
@@ -358,19 +375,19 @@ function SearchContent() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <input value={budgetMin} onChange={e => setBudgetMin(e.target.value)}
                           placeholder="최소 금액" type="number"
-                          style={{ width: 120, fontSize: 12, padding: '6px 10px', height: 'auto' }} />
+                          style={{ width: isMobile ? '100%' : 120, flex: isMobile ? 1 : undefined, fontSize: 12, padding: '6px 10px', height: 'auto' }} />
                         <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>~</span>
                         <input value={budgetMax} onChange={e => setBudgetMax(e.target.value)}
                           placeholder="최대 금액" type="number"
-                          style={{ width: 120, fontSize: 12, padding: '6px 10px', height: 'auto' }} />
-                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>원</span>
+                          style={{ width: isMobile ? '100%' : 120, flex: isMobile ? 1 : undefined, fontSize: 12, padding: '6px 10px', height: 'auto' }} />
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)', flexShrink: 0 }}>원</span>
                       </div>
                     </div>
                   </div>
 
                   {/* 카테고리 */}
-                  <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', paddingTop: 14, paddingBottom: 14 }}>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', minWidth: 80, paddingTop: 5, flexShrink: 0 }}>카테고리</p>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 8 : 16, alignItems: isMobile ? 'stretch' : 'flex-start', paddingTop: 14, paddingBottom: 14 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', minWidth: isMobile ? undefined : 80, paddingTop: isMobile ? 0 : 5, flexShrink: 0 }}>카테고리</p>
                     <div style={{ flex: 1 }}>
                       {/* 전체 카테고리 버튼 */}
                       <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
@@ -434,13 +451,13 @@ function SearchContent() {
             )}
 
             {/* Top bar */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 8, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+              <p style={{ fontSize: isMobile ? 13 : 14, color: 'var(--text-muted)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {selectedCategory ? <><strong style={{ color: 'var(--text)' }}>{selectedCategory}</strong> 카테고리 </> : query ? <><strong style={{ color: 'var(--text)' }}>"{query}"</strong> 검색 결과 </> : <strong style={{ color: 'var(--text)' }}>{topTab} </strong>}
                 <strong style={{ color: '#FF2D55' }}>{channels.length}건</strong>
               </p>
-              <div style={{ position: 'relative' }}>
-                <button onClick={() => setSortOpen(!sortOpen)} style={{ padding: '8px 14px', background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text)', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <button onClick={() => setSortOpen(!sortOpen)} style={{ padding: isMobile ? '7px 10px' : '8px 14px', background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text)', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: isMobile ? 12 : 13, whiteSpace: 'nowrap' }}>
                   {sortBy} <ChevronDown size={14} />
                 </button>
                 {sortOpen && (

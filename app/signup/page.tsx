@@ -1,6 +1,6 @@
 'use client';
 import { showToast } from '../components/Toast';
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Header from '../components/Header';
@@ -22,6 +22,13 @@ function SignupContent() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [userType, setUserType] = useState<'advertiser'|'influencer'>((params.get('type') as any) || 'influencer');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check(); window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   // 공통
   const [form, setForm] = useState({ email: '', password: '', passwordConfirm: '', name: '', company: '', phone: '' });
@@ -340,7 +347,7 @@ function SignupContent() {
 
                 <div>
                   <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>휴대폰번호</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr 1fr', gap: 8 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '60px 1fr 1fr' : '70px 1fr 1fr', gap: isMobile ? 6 : 8 }}>
                     <input value="010" readOnly style={{ textAlign: 'center', fontSize: 13 }} />
                     <input placeholder="0000" maxLength={4} style={{ fontSize: 13 }} onChange={e => update('phone', `010-${e.target.value}`)} />
                     <input placeholder="0000" maxLength={4} style={{ fontSize: 13 }} />

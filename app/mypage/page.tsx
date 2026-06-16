@@ -196,43 +196,67 @@ export default function MyPage() {
   return (
     <div>
       <Header />
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: isMobile ? '16px' : '32px 24px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '220px 1fr', gap: isMobile ? 16 : 24, alignItems: 'start' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: isMobile ? '0 0 16px' : '32px 24px', display: isMobile ? 'block' : 'grid', gridTemplateColumns: isMobile ? undefined : '220px 1fr', gap: isMobile ? 0 : 24, alignItems: 'start' }}>
         {/* Sidebar */}
-        <aside style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', position: isMobile ? 'static' : 'sticky', top: 88 }}>
-          <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', textAlign: 'center' }}>
-            <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', fontSize: 22, fontWeight: 900, color: 'white' }}>
-              {(profile?.name || user?.email || '?')[0].toUpperCase()}
+        <aside style={isMobile ? {
+          background: 'var(--bg-card)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 60, zIndex: 20,
+        } : { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', position: 'sticky', top: 88 }}>
+          {!isMobile && (
+            <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', textAlign: 'center' }}>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', fontSize: 22, fontWeight: 900, color: 'white' }}>
+                {(profile?.name || user?.email || '?')[0].toUpperCase()}
+              </div>
+              <p style={{ fontWeight: 800, fontSize: 15, marginBottom: 2 }}>{profile?.name || '이름 없음'}</p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{profile?.company || profile?.channel_name || user?.email}</p>
+              <span style={{ fontSize: 11, fontWeight: 700, color: isInfluencer ? '#FF2D55' : '#FFB800', background: isInfluencer ? 'rgba(255,45,85,0.1)' : 'rgba(255,184,0,0.1)', padding: '2px 10px', borderRadius: 20 }}>
+                {isInfluencer ? '인플루언서' : '광고주'}
+              </span>
             </div>
-            <p style={{ fontWeight: 800, fontSize: 15, marginBottom: 2 }}>{profile?.name || '이름 없음'}</p>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{profile?.company || profile?.channel_name || user?.email}</p>
-            <span style={{ fontSize: 11, fontWeight: 700, color: isInfluencer ? '#FF2D55' : '#FFB800', background: isInfluencer ? 'rgba(255,45,85,0.1)' : 'rgba(255,184,0,0.1)', padding: '2px 10px', borderRadius: 20 }}>
-              {isInfluencer ? '인플루언서' : '광고주'}
-            </span>
-          </div>
-          <nav style={{ padding: '8px' }}>
+          )}
+          {isMobile && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: 'white', flexShrink: 0 }}>
+                {(profile?.name || user?.email || '?')[0].toUpperCase()}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontWeight: 800, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.name || '이름 없음'}</p>
+                <span style={{ fontSize: 10, fontWeight: 700, color: isInfluencer ? '#FF2D55' : '#FFB800' }}>
+                  {isInfluencer ? '인플루언서' : '광고주'}
+                </span>
+              </div>
+              <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', border: '1px solid var(--border)', borderRadius: 8, background: 'transparent', color: 'var(--text-muted)', fontSize: 12, flexShrink: 0 }}>
+                <LogOut size={13} /> 로그아웃
+              </button>
+            </div>
+          )}
+          <nav style={isMobile ? { display: 'flex', overflowX: 'auto', gap: 4, padding: '8px 12px', WebkitOverflowScrolling: 'touch' } : { padding: '8px' }}>
             {menus.map(menu => {
               const Icon = menu.icon;
               return (
                 <button key={menu.id} onClick={() => setActiveMenu(menu.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px', border: 'none', cursor: 'pointer', borderRadius: 8, marginBottom: 2, background: activeMenu === menu.id ? 'rgba(255,45,85,0.1)' : 'transparent', color: activeMenu === menu.id ? '#FF2D55' : 'var(--text-muted)', textAlign: 'left' }}>
-                  <Icon size={15} />
+                  style={isMobile ? {
+                    display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', border: 'none', cursor: 'pointer', borderRadius: 20, background: activeMenu === menu.id ? 'rgba(255,45,85,0.12)' : 'var(--bg-card2)', color: activeMenu === menu.id ? '#FF2D55' : 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0,
+                  } : { display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px', border: 'none', cursor: 'pointer', borderRadius: 8, marginBottom: 2, background: activeMenu === menu.id ? 'rgba(255,45,85,0.1)' : 'transparent', color: activeMenu === menu.id ? '#FF2D55' : 'var(--text-muted)', textAlign: 'left' }}>
+                  <Icon size={14} />
                   <span style={{ fontSize: 13, fontWeight: activeMenu === menu.id ? 700 : 400 }}>{menu.label}</span>
                 </button>
               );
             })}
           </nav>
-          <div style={{ padding: '12px', borderTop: '1px solid var(--border)' }}>
-            <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '10px 12px', border: 'none', cursor: 'pointer', borderRadius: 8, background: 'transparent', color: '#FF2D55', fontSize: 13 }}>
-              <LogOut size={14} /> 로그아웃
-            </button>
-          </div>
+          {!isMobile && (
+            <div style={{ padding: '12px', borderTop: '1px solid var(--border)' }}>
+              <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '10px 12px', border: 'none', cursor: 'pointer', borderRadius: 8, background: 'transparent', color: '#FF2D55', fontSize: 13 }}>
+                <LogOut size={14} /> 로그아웃
+              </button>
+            </div>
+          )}
         </aside>
 
         {/* Main */}
-        <main>
+        <main style={isMobile ? { padding: '16px' } : undefined}>
           {/* 프로필 */}
           {activeMenu === 'profile' && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '18px' : '28px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 800 }}>프로필</h2>
                 {editMode
@@ -245,7 +269,7 @@ export default function MyPage() {
               </div>
 
               {/* 프로필 이미지 업로드 */}
-              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, alignItems: 'center', marginBottom: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '120px 1fr', gap: 12, alignItems: 'center', marginBottom: 16 }}>
                 <p style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>프로필 이미지</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{ position: 'relative' }}>
@@ -273,13 +297,13 @@ export default function MyPage() {
 
               <div style={{ display: 'grid', gap: 14 }}>
                 {/* 아이디 */}
-                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, alignItems: 'center' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '120px 1fr', gap: 12, alignItems: 'center' }}>
                   <p style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>아이디</p>
                   <p style={{ fontSize: 14 }}>{user?.email}</p>
                 </div>
 
                 {/* 비밀번호 */}
-                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, alignItems: 'center' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '120px 1fr', gap: 12, alignItems: 'center' }}>
                   <p style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>비밀번호</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontSize: 14, letterSpacing: 3, color: 'var(--text-muted)' }}>●●●●●●●●</span>
@@ -296,7 +320,7 @@ export default function MyPage() {
                   ...(isInfluencer ? [{ label: '채널명', value: editForm.channel_name, field: 'channel_name' }] : []),
                   { label: '휴대폰번호', value: editForm.phone, field: 'phone' },
                 ].map((item: any) => (
-                  <div key={item.label} style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, alignItems: 'center' }}>
+                  <div key={item.label} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '120px 1fr', gap: 12, alignItems: 'center' }}>
                     <p style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>{item.label}</p>
                     {editMode && item.field
                       ? <input value={editForm[item.field as keyof typeof editForm]} onChange={e => setEditForm(f => ({ ...f, [item.field!]: e.target.value }))} style={{ fontSize: 14, padding: '8px 12px', height: 'auto' }} />
@@ -305,14 +329,14 @@ export default function MyPage() {
                   </div>
                 ))}
 
-                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, alignItems: 'center' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '120px 1fr', gap: 12, alignItems: 'center' }}>
                   <p style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>이메일 수신</p>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                     <input type="checkbox" checked={emailAgree} onChange={e => setEmailAgree(e.target.checked)} />
                     <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>이메일 수신을 동의합니다.</span>
                   </label>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12, alignItems: 'center' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '120px 1fr', gap: 12, alignItems: 'center' }}>
                   <p style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>SMS 수신</p>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                     <input type="checkbox" checked={smsAgree} onChange={e => setSmsAgree(e.target.checked)} />
@@ -338,7 +362,7 @@ export default function MyPage() {
           {/* 비밀번호 변경 모달 */}
           {showPasswordModal && (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 20 }}>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '28px', width: '100%', maxWidth: 400 }}>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: isMobile ? '18px' : '28px', width: '100%', maxWidth: 400 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <h3 style={{ fontSize: 17, fontWeight: 800 }}>비밀번호 변경</h3>
                   <button onClick={() => { setShowPasswordModal(false); setPwError(''); setPwForm({ current: '', next: '', confirm: '' }); }}
@@ -379,7 +403,7 @@ export default function MyPage() {
           {/* 서비스 관리 (인플루언서) */}
           {activeMenu === 'services' && isInfluencer && (
             <div>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px', marginBottom: 16 }}>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '18px' : '28px', marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <h2 style={{ fontSize: 18, fontWeight: 800 }}>서비스 관리</h2>
                   <button onClick={() => setShowServiceForm(!showServiceForm)}
@@ -552,7 +576,7 @@ export default function MyPage() {
 
           {/* 결제 내역 */}
           {activeMenu === 'payments' && !isInfluencer && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '18px' : '28px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 800 }}>결제 내역</h2>
                 <select style={{ padding: '7px 12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
@@ -584,7 +608,7 @@ export default function MyPage() {
 
           {/* 쿠폰 */}
           {activeMenu === 'coupons' && !isInfluencer && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '18px' : '28px' }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>쿠폰</h2>
               {/* 쿠폰 목록 샘플 UI */}
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14, marginBottom: 20 }}>
@@ -617,7 +641,7 @@ export default function MyPage() {
 
           {/* 관심 인플루언서 */}
           {activeMenu === 'favorites' && !isInfluencer && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '18px' : '28px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 800 }}>관심 인플루언서</h2>
                 <div style={{ display: 'flex', gap: 6 }}>
@@ -653,7 +677,7 @@ export default function MyPage() {
 
           {/* Q&A */}
           {activeMenu === 'qna' && !isInfluencer && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '18px' : '28px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 800 }}>Q&A</h2>
                 <button onClick={() => setShowQnaForm(!showQnaForm)}
@@ -721,7 +745,7 @@ export default function MyPage() {
 
           {/* 알림 */}
           {activeMenu === 'notifications' && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '18px' : '28px' }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>알림</h2>
               <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
                 <p style={{ fontSize: 36, marginBottom: 12 }}>🔔</p>
@@ -732,7 +756,7 @@ export default function MyPage() {
 
           {/* 설정 */}
           {activeMenu === 'settings' && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '18px' : '28px' }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 24 }}>설정</h2>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
@@ -942,7 +966,7 @@ function ProjectManager({ userId, isInfluencer, isMobile }: { userId: string; is
   });
 
   return (
-    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px' }}>
+    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '18px' : '28px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <h2 style={{ fontSize: 18, fontWeight: 800 }}>프로젝트 관리</h2>
         <div style={{ display: 'flex', gap: 8 }}>

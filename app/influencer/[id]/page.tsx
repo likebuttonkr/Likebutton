@@ -63,9 +63,9 @@ export default function InfluencerDetail() {
   if (loading) return (
     <div>
       <Header />
-      <div style={{ maxWidth: 1000, margin: '60px auto', padding: '0 24px' }}>
+      <div style={{ maxWidth: 1000, margin: '40px auto', padding: '0 16px' }}>
         <div style={{ height: 200, background: 'var(--bg-card)', borderRadius: 16, marginBottom: 20, border: '1px solid var(--border)' }} />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: typeof window !== 'undefined' && window.innerWidth < 768 ? '1fr' : '1fr 320px', gap: 24 }}>
           <div style={{ height: 400, background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)' }} />
           <div style={{ height: 400, background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)' }} />
         </div>
@@ -154,10 +154,10 @@ export default function InfluencerDetail() {
           {/* Left: tabs */}
           <div>
             {/* Tab nav */}
-            <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 4 }}>
+            <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 4, overflowX: isMobile ? 'auto' : 'visible', WebkitOverflowScrolling: 'touch' }}>
               {[['videos', '최근 영상'], ['audience', '시청자층 분석'], ['service_desc', '서비스 설명'], ['pricing', '가격 정보'], ['process', '과정 소개'], ['reviews', '리뷰']].map(([val, label]) => (
                 <button key={val} onClick={() => setTab(val as any)}
-                  style={{ flex: 1, padding: '7px 4px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: tab === val ? 700 : 500, background: tab === val ? 'var(--bg-card2)' : 'transparent', color: tab === val ? 'var(--text)' : 'var(--text-muted)', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
+                  style={{ flex: isMobile ? '0 0 auto' : 1, padding: isMobile ? '7px 12px' : '7px 4px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: tab === val ? 700 : 500, background: tab === val ? 'var(--bg-card2)' : 'transparent', color: tab === val ? 'var(--text)' : 'var(--text-muted)', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
                   {label}
                 </button>
               ))}
@@ -267,7 +267,7 @@ export default function InfluencerDetail() {
                 </div>
 
                 {/* 시청자 분포 */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
                   {/* 연령대 */}
                   <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px' }}>
                     <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>👤 시청자 연령대</h3>
@@ -389,7 +389,7 @@ export default function InfluencerDetail() {
                       </div>
                       <span style={{ fontSize: 12, background: 'rgba(255,45,85,0.08)', color: '#FF2D55', padding: '4px 12px', borderRadius: 20, fontWeight: 600 }}>작업 {s.days}</span>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 14 }}>
                       <div style={{ background: 'var(--bg-card2)', borderRadius: 10, padding: '12px' }}>
                         <p style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 6 }}>설명</p>
                         <p style={{ fontSize: 13, lineHeight: 1.5 }}>{s.desc}</p>

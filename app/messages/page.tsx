@@ -382,8 +382,15 @@ function PaymentPage({ paymentData, onBack }: { paymentData: any; onBack: () => 
   const [taxEmail, setTaxEmail] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [paid, setPaid] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const couponDiscount = coupon ? 50000 : 0;
   const finalAmount = paymentData.amount - couponDiscount;
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check(); window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   if (paid) {
     return (
@@ -416,12 +423,12 @@ function PaymentPage({ paymentData, onBack }: { paymentData: any; onBack: () => 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <Header isLoggedIn={true} />
-      <div style={{ maxWidth: 680, margin: '0 auto', padding: '32px 24px' }}>
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: isMobile ? '20px 16px' : '32px 24px' }}>
         <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14, marginBottom: 24 }}>← 메시지로 돌아가기</button>
 
         <h1 style={{ fontSize: 22, fontWeight: 900, marginBottom: 24 }}>결제하기</h1>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: 20, alignItems: 'start' }}>
           <div>
             {/* 서비스 정보 */}
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px', marginBottom: 16 }}>

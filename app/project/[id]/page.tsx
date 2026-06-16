@@ -201,7 +201,7 @@ export default function ProjectDetail() {
                     { label: '키워드', value: project.keyword || '-' },
                     { label: '릴리즈 예정일', value: project.release_date || '-' },
                   ].map(f => (
-                    <div key={f.label} style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: 8, marginBottom: 8, fontSize: 13 }}>
+                    <div key={f.label} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '100px 1fr', gap: isMobile ? 2 : 8, marginBottom: 8, fontSize: 13 }}>
                       <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{f.label}</span>
                       <span>{f.value}</span>
                     </div>

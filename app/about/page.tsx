@@ -29,10 +29,10 @@ export default function AboutPage() {
       <Header />
 
       {/* Hero */}
-      <div style={{ background: 'linear-gradient(135deg, rgba(255,45,85,0.08), rgba(255,107,53,0.08))', padding: '80px 24px', textAlign: 'center' }}>
+      <div style={{ background: 'linear-gradient(135deg, rgba(255,45,85,0.08), rgba(255,107,53,0.08))', padding: 'clamp(40px,8vw,80px) 20px', textAlign: 'center' }}>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
           <div style={{ width: 64, height: 64, background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 28 }}>♥</div>
-          <h1 style={{ fontSize: 40, fontWeight: 900, marginBottom: 16, lineHeight: 1.2 }}>인플루언서 마케팅의<br />새로운 기준</h1>
+          <h1 style={{ fontSize: 'clamp(26px,6vw,40px)', fontWeight: 900, marginBottom: 16, lineHeight: 1.2 }}>인플루언서 마케팅의<br />새로운 기준</h1>
           <p style={{ fontSize: 16, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 32 }}>
             라이크버튼은 광고주와 인플루언서를 가장 안전하고 효율적으로 연결하는 플랫폼입니다.<br />
             데이터 기반의 정확한 매칭과 안전결제 시스템으로 믿을 수 있는 인플루언서 마케팅을 제공합니다.
@@ -44,9 +44,9 @@ export default function AboutPage() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '60px 24px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(32px,6vw,60px) 20px' }}>
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 72 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 20, marginBottom: 72 }}>
           {STATS.map(s => (
             <div key={s.label} style={{ textAlign: 'center', padding: '28px 20px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14 }}>
               <p style={{ fontSize: 32, fontWeight: 900, color: '#FF2D55', marginBottom: 6 }}>{s.value}</p>
