@@ -41,6 +41,8 @@ export default function MyPage() {
 
   // 관심 인플루언서
   const [favorites, setFavorites] = useState<any[]>([]);
+  const [favoritesPlatform, setFavoritesPlatform] = useState('유튜브');
+  const [couponCode, setCouponCode] = useState('');
 
   // Q&A
   const [qnaList, setQnaList] = useState<any[]>([]);
@@ -632,8 +634,15 @@ export default function MyPage() {
               <div style={{ textAlign: 'center', padding: '24px', border: '1px solid var(--border)', borderRadius: 10 }}>
                 <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>쿠폰 코드가 있으신가요?</p>
                 <div style={{ display: 'flex', gap: 8, maxWidth: 320, margin: '0 auto' }}>
-                  <input placeholder="쿠폰 코드 입력" style={{ flex: 1, fontSize: 13, padding: '9px 12px', height: 'auto' }} />
-                  <button style={{ padding: '9px 16px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>등록</button>
+                  <input value={couponCode} onChange={e => setCouponCode(e.target.value)} placeholder="쿠폰 코드 입력" style={{ flex: 1, fontSize: 13, padding: '9px 12px', height: 'auto' }} />
+                  <button onClick={async () => {
+                      if (!couponCode.trim()) { showToast('쿠폰 코드를 입력해주세요.', 'warning'); return; }
+                      const { data } = await supabase.from('coupons').select('*').eq('code', couponCode.trim()).single();
+                      if (!data) { showToast('유효하지 않은 쿠폰 코드입니다.', 'error'); return; }
+                      showToast('쿠폰이 등록되었습니다!', 'success');
+                      setCouponCode('');
+                    }}
+                    style={{ padding: '9px 16px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>등록</button>
                 </div>
               </div>
             </div>
@@ -645,8 +654,9 @@ export default function MyPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 800 }}>관심 인플루언서</h2>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  {['유튜브', '인스타그램', '틱톡'].map((p, i) => (
-                    <button key={p} style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${i === 0 ? '#FF2D55' : 'var(--border)'}`, background: i === 0 ? 'rgba(255,45,85,0.1)' : 'transparent', color: i === 0 ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}>{p}</button>
+                  {['유튜브', '인스타그램', '틱톡'].map((p) => (
+                    <button key={p} onClick={() => setFavoritesPlatform(p)}
+                      style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${favoritesPlatform === p ? '#FF2D55' : 'var(--border)'}`, background: favoritesPlatform === p ? 'rgba(255,45,85,0.1)' : 'transparent', color: favoritesPlatform === p ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}>{p}</button>
                   ))}
                 </div>
               </div>

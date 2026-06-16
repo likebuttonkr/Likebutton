@@ -46,6 +46,7 @@ export default function AdminPage() {
   const [userFilter, setUserFilter] = useState('전체');
   const [isMobile, setIsMobile] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [dashPeriod, setDashPeriod] = useState('30일');
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 900);
@@ -59,15 +60,23 @@ export default function AdminPage() {
     setLoading(false);
   }, []);
 
-  const loadData = async () => {
+  const loadData = async (period: string = dashPeriod) => {
     const { data: profiles } = await supabase.from('profiles').select('*');
     const { data: projects } = await supabase.from('projects').select('*');
+    const now = new Date();
+    let fromDate: Date | null = null;
+    if (period === '오늘') { fromDate = new Date(now); fromDate.setHours(0,0,0,0); }
+    else if (period === '7일') { fromDate = new Date(now); fromDate.setDate(fromDate.getDate() - 7); }
+    else if (period === '30일') { fromDate = new Date(now); fromDate.setMonth(fromDate.getMonth() - 1); }
+    const inRange = (d: string) => !fromDate || new Date(d) >= fromDate;
     if (profiles) {
+      const filteredProfiles = profiles.filter(p => inRange(p.created_at));
+      const filteredProjects = (projects || []).filter(p => inRange(p.created_at));
       setStats({
-        totalUsers: profiles.length,
-        influencers: profiles.filter(p => p.user_type === 'influencer').length,
-        advertisers: profiles.filter(p => p.user_type === 'advertiser').length,
-        projects: projects?.length || 0,
+        totalUsers: filteredProfiles.length,
+        influencers: filteredProfiles.filter(p => p.user_type === 'influencer').length,
+        advertisers: filteredProfiles.filter(p => p.user_type === 'advertiser').length,
+        projects: filteredProjects.length,
         pendingApprovals: profiles.filter(p => p.user_type === 'advertiser' && (!p.approval_status || p.approval_status === '승인대기')).length,
       });
       setUsers(profiles);
@@ -205,8 +214,8 @@ export default function AdminPage() {
               <h1 style={{ fontSize: 20, fontWeight: 900 }}>대시보드</h1>
               <div style={{ display: 'flex', gap: 6 }}>
                 {['오늘', '7일', '30일', '전체'].map(period => (
-                  <button key={period}
-                    style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid var(--border)', background: period === '30일' ? 'rgba(255,45,85,0.1)' : 'transparent', color: period === '30일' ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, fontWeight: period === '30일' ? 700 : 400, cursor: 'pointer' }}>
+                  <button key={period} onClick={() => { setDashPeriod(period); loadData(period); }}
+                    style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid var(--border)', background: period === dashPeriod ? 'rgba(255,45,85,0.1)' : 'transparent', color: period === dashPeriod ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, fontWeight: period === dashPeriod ? 700 : 400, cursor: 'pointer' }}>
                     {period}
                   </button>
                 ))}

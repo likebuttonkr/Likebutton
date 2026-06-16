@@ -55,8 +55,14 @@ export default function Footer() {
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
           <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>© 2024 라이크버튼 All rights reserved.</p>
           <div style={{ display: 'flex', gap: 8 }}>
-            {['📺', '📸', '🎵'].map((icon, i) => (
-              <button key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text)', width: 32, height: 32, borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>{icon}</button>
+            {[
+              { icon: '📺', url: 'https://youtube.com', label: 'YouTube' },
+              { icon: '📸', url: 'https://instagram.com', label: 'Instagram' },
+              { icon: '📘', url: 'https://facebook.com', label: 'Facebook' },
+              { icon: '📝', url: 'https://blog.naver.com', label: 'Blog' },
+            ].map(sns => (
+              <a key={sns.label} href={sns.url} target="_blank" rel="noreferrer" title={sns.label}
+                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text)', width: 32, height: 32, borderRadius: 8, cursor: 'pointer', fontSize: 14, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{sns.icon}</a>
             ))}
           </div>
         </div>

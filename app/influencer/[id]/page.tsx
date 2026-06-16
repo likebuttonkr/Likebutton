@@ -85,7 +85,7 @@ export default function InfluencerDetail() {
   return (
     <div>
       <Header />
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: isMobile ? '16px' : '32px 24px' }}>
         {/* Back */}
         <Link href="/search" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)', textDecoration: 'none', fontSize: 14, marginBottom: 24, fontWeight: 500 }}
           className="hover:text-white">
@@ -93,20 +93,20 @@ export default function InfluencerDetail() {
         </Link>
 
         {/* Profile card */}
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '32px', marginBottom: 24 }}>
-          <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: isMobile ? '20px' : '32px', marginBottom: 24 }}>
+          <div style={{ display: 'flex', gap: isMobile ? 16 : 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
             <div style={{ position: 'relative' }}>
-              <img src={channel.thumbnail} alt={channel.title} style={{ width: 100, height: 100, borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--border)' }} />
-              <div style={{ position: 'absolute', bottom: 4, right: 4, background: '#FF2D55', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'white', fontWeight: 700 }}>
+              <img src={channel.thumbnail} alt={channel.title} style={{ width: isMobile ? 72 : 100, height: isMobile ? 72 : 100, borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--border)' }} />
+              <div style={{ position: 'absolute', bottom: 4, right: 4, background: '#FF2D55', borderRadius: '50%', width: isMobile ? 20 : 24, height: isMobile ? 20 : 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? 9 : 10, color: 'white', fontWeight: 700 }}>
                 YT
               </div>
             </div>
-            <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ flex: 1, minWidth: isMobile ? 140 : 200 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-                <h1 style={{ fontSize: 24, fontWeight: 900 }}>{channel.title}</h1>
-                <CheckCircle size={20} color="#FF2D55" fill="rgba(255,45,85,0.2)" />
+                <h1 style={{ fontSize: isMobile ? 18 : 24, fontWeight: 900 }}>{channel.title}</h1>
+                <CheckCircle size={isMobile ? 16 : 20} color="#FF2D55" fill="rgba(255,45,85,0.2)" />
               </div>
-              <div style={{ display: 'flex', gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: isMobile ? 10 : 16, marginBottom: 12, flexWrap: 'wrap' }}>
                 {[
                   { label: '구독자', value: channel.subscriberCount },
                   { label: '총 조회수', value: channel.viewCount },
@@ -114,23 +114,47 @@ export default function InfluencerDetail() {
                 ].map(s => (
                   <div key={s.label}>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block' }}>{s.label}</span>
-                    <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{s.value}</span>
+                    <span style={{ fontSize: isMobile ? 13 : 16, fontWeight: 800, color: 'var(--text)' }}>{s.value}</span>
                   </div>
                 ))}
               </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, maxWidth: 500 }}>{channel.description?.slice(0, 150) || '채널 설명이 없습니다.'}{channel.description && channel.description.length > 150 ? '...' : ''}</p>
+              {!isMobile && (
+                <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, maxWidth: 500 }}>{channel.description?.slice(0, 150) || '채널 설명이 없습니다.'}{channel.description && channel.description.length > 150 ? '...' : ''}</p>
+              )}
             </div>
-            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-              <button onClick={() => setLiked(!liked)} style={{ padding: '10px 16px', background: liked ? 'rgba(255,45,85,0.15)' : 'var(--bg-card2)', border: `1px solid ${liked ? '#FF2D55' : 'var(--border)'}`, color: liked ? '#FF2D55' : 'var(--text-muted)', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500 }}>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0, width: isMobile ? '100%' : 'auto' }}>
+              <button onClick={() => setLiked(!liked)} style={{ flex: isMobile ? 1 : undefined, padding: '10px 16px', background: liked ? 'rgba(255,45,85,0.15)' : 'var(--bg-card2)', border: `1px solid ${liked ? '#FF2D55' : 'var(--border)'}`, color: liked ? '#FF2D55' : 'var(--text-muted)', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}>
                 <Heart size={16} fill={liked ? '#FF2D55' : 'none'} /> {liked ? '관심 등록됨' : '관심 등록'}
               </button>
-              <button style={{ padding: '10px', background: 'var(--bg-card2)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: 8, cursor: 'pointer' }}>
+              <button onClick={async () => {
+                  try { await navigator.clipboard.writeText(window.location.href); }
+                  catch {
+                    const el = document.createElement('textarea');
+                    el.value = window.location.href;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                  }
+                  showToast('링크가 복사되었습니다!', 'success');
+                }}
+                style={{ flexShrink: 0, padding: '10px', background: 'var(--bg-card2)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Share2 size={16} />
               </button>
-              <a href={`https://youtube.com/channel/${id}`} target="_blank" rel="noreferrer" style={{ padding: '10px 16px', background: 'rgba(255,0,0,0.1)', border: '1px solid rgba(255,0,0,0.2)', color: '#FF4444', borderRadius: 8, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600 }}>
-                <ExternalLink size={14} /> YouTube
-              </a>
+              {!isMobile && (
+                <a href={`https://youtube.com/channel/${id}`} target="_blank" rel="noreferrer" style={{ padding: '10px 16px', background: 'rgba(255,0,0,0.1)', border: '1px solid rgba(255,0,0,0.2)', color: '#FF4444', borderRadius: 8, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  <ExternalLink size={14} /> YouTube
+                </a>
+              )}
             </div>
+            {isMobile && (
+              <>
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.6, width: '100%' }}>{channel.description?.slice(0, 120) || '채널 설명이 없습니다.'}{channel.description && channel.description.length > 120 ? '...' : ''}</p>
+                <a href={`https://youtube.com/channel/${id}`} target="_blank" rel="noreferrer" style={{ width: '100%', padding: '10px 16px', background: 'rgba(255,0,0,0.1)', border: '1px solid rgba(255,0,0,0.2)', color: '#FF4444', borderRadius: 8, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 600 }}>
+                  <ExternalLink size={14} /> YouTube에서 보기
+                </a>
+              </>
+            )}
           </div>
 
           {/* Rating */}
@@ -515,9 +539,9 @@ export default function InfluencerDetail() {
               <Link href={`/request/${id}`} style={{ display: 'block', width: '100%', padding: '14px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 10, fontWeight: 700, fontSize: 15, textAlign: 'center', marginBottom: 10 }}>
                 광고 요청하기
               </Link>
-              <button style={{ width: '100%', padding: '12px', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 10, fontWeight: 600, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              <Link href="/messages" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%', padding: '12px', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 10, fontWeight: 600, fontSize: 14, textDecoration: 'none', boxSizing: 'border-box' }}>
                 <MessageSquare size={15} /> 메시지 보내기
-              </button>
+              </Link>
             </div>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: 20 }}>
               <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>채널 정보</p>

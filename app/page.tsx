@@ -110,13 +110,23 @@ export default function MainPage() {
 
   const trendColor = (t: string) => t === 'NEW' ? '#FF2D55' : t.startsWith('▲') ? '#00C896' : t === '-' ? 'var(--text-muted)' : '#FF6B35';
 
+  let touchStartX = 0;
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX = e.touches[0].clientX; };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) < 40) return;
+    if (diff > 0) setBannerIdx(i => (i + 1) % BANNERS.length);
+    else setBannerIdx(i => (i - 1 + BANNERS.length) % BANNERS.length);
+  };
+
   return (
     <div>
       <Header />
 
       {/* Hero Banner */}
       <section style={{ background: 'linear-gradient(135deg, #0f0f1a 0%, #1a0a14 100%)', padding: isMobile ? '36px 16px' : '60px 24px', overflow: 'hidden', position: 'relative' }}
-        onMouseEnter={() => setBannerHover(true)} onMouseLeave={() => setBannerHover(false)}>
+        onMouseEnter={() => setBannerHover(true)} onMouseLeave={() => setBannerHover(false)}
+        onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         {/* 좌우 화살표 */}
         {bannerHover && !isMobile && (
           <>
@@ -159,12 +169,12 @@ export default function MainPage() {
             <div style={{ position: 'relative', marginBottom: 12 }}>
               <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input value={searchVal} onChange={e => setSearchVal(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && router.push(`/search?q=${searchVal}`)}
-                placeholder="채널명, 카테고리 검색..." style={{ paddingLeft: 34, fontSize: 13 }} />
+                onKeyDown={e => e.key === 'Enter' && router.push(`/search?q=${encodeURIComponent(searchVal)}`)}
+                placeholder="채널명, 카테고리 검색..." enterKeyHint="search" style={{ paddingLeft: 34, fontSize: 13 }} />
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
               {CATEGORIES.slice(0, 6).map(cat => (
-                <button key={cat.label} onClick={() => router.push(`/search?q=${cat.query}`)}
+                <button key={cat.label} onClick={() => router.push(`/search?q=${encodeURIComponent(cat.query)}`)}
                   style={{ padding: '4px 10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, color: 'var(--text-muted)', fontSize: 11, cursor: 'pointer' }}>
                   {cat.icon} {cat.label}
                 </button>
@@ -178,7 +188,7 @@ export default function MainPage() {
                 </button>
               ))}
             </div>
-            <button onClick={() => router.push(`/search?q=${searchVal}`)}
+            <button onClick={() => router.push(`/search?q=${encodeURIComponent(searchVal)}`)}
               style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
               검색하기
             </button>
@@ -193,7 +203,7 @@ export default function MainPage() {
           <h2 style={{ fontSize: isMobile ? 17 : 21, fontWeight: 800, marginBottom: 14 }}>카테고리</h2>
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${isMobile ? 4 : 8}, 1fr)`, gap: isMobile ? 8 : 12 }}>
             {CATEGORIES.map(cat => (
-              <Link key={cat.label} href={`/search?q=${cat.query}`}
+              <Link key={cat.label} href={`/search?q=${encodeURIComponent(cat.query)}`}
                 style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: isMobile ? '12px 4px' : '16px 8px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12 }}>
                 <span style={{ fontSize: isMobile ? 22 : 26 }}>{cat.icon}</span>
                 <span style={{ fontSize: isMobile ? 11 : 12, fontWeight: 600, color: 'var(--text-muted)' }}>{cat.label}</span>
@@ -281,7 +291,7 @@ export default function MainPage() {
             </div>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
               {SEARCH_TRENDS[trendPeriod].map((item, i) => (
-                <button key={i} onClick={() => router.push(`/search?q=${item.keyword}`)}
+                <button key={i} onClick={() => router.push(`/search?q=${encodeURIComponent(item.keyword)}`)}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '11px 16px', border: 'none', borderBottom: i < 9 ? '1px solid var(--border)' : 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
                   <span style={{ fontSize: 13, fontWeight: 700, color: i < 3 ? '#FF2D55' : 'var(--text-muted)', minWidth: 22 }}>{item.rank}</span>
                   <span style={{ fontSize: 13, flex: 1, color: 'var(--text)', fontWeight: 500 }}>{item.keyword}</span>

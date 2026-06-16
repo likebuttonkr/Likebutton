@@ -260,7 +260,14 @@ export default function MessagesPage() {
                             style={{ width: '100%', padding: '9px', background: 'linear-gradient(135deg,#00C896,#5B8DEF)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
                             결제하기
                           </button>
-                          <button style={{ width: '100%', padding: '7px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: 8, cursor: 'pointer', fontSize: 12, marginTop: 6 }}>
+                          <button onClick={() => {
+                              setAllMessages(prev => ({
+                                ...prev,
+                                [selectedChat.id]: (prev[selectedChat.id] || []).filter(m => m.id !== msg.id),
+                              }));
+                              showToast('안전결제 요청이 취소되었습니다.', 'info');
+                            }}
+                            style={{ width: '100%', padding: '7px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: 8, cursor: 'pointer', fontSize: 12, marginTop: 6 }}>
                             취소
                           </button>
                         </div>
@@ -297,7 +304,8 @@ export default function MessagesPage() {
 
               {/* 입력창 */}
               <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-                <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 6, borderRadius: 6 }}>
+                <button onClick={() => showToast('파일 첨부 기능은 준비 중입니다.', 'info')}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 6, borderRadius: 6 }}>
                   <Paperclip size={18} />
                 </button>
                 <input value={input} onChange={e => { setInput(e.target.value); if (warning) setWarning(null); }}

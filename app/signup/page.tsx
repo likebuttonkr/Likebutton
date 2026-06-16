@@ -180,10 +180,10 @@ function SignupContent() {
     : ['이메일 입력', '약관동의', '회원정보'];
 
   return (
-    <div style={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 24px' }}>
+    <div style={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '20px 16px' : '32px 24px' }}>
       <div style={{ width: '100%', maxWidth: 520 }}>
         {/* 단계 표시 */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 24, overflowX: 'auto', WebkitOverflowScrolling: 'touch', padding: '2px' }}>
           {STEPS.map((label, i) => {
             const s = i + 1;
             const active = step === s;

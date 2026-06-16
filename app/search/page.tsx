@@ -308,7 +308,7 @@ function SearchContent() {
                   onKeyDown={e => { if (e.key === 'Enter') { setQuery(inputVal); setShowAutoComplete(false); } }}
                   onBlur={() => setTimeout(() => setShowAutoComplete(false), 150)}
                   onFocus={() => inputVal && handleSearchInput(inputVal)}
-                  placeholder="채널명, 카테고리로 검색..." style={{ paddingLeft: 38, fontSize: 14, height: 42 }} />
+                  placeholder="채널명, 카테고리로 검색..." enterKeyHint="search" style={{ paddingLeft: 38, fontSize: 14, height: 42 }} />
                 {showAutoComplete && autoCompleteList.length > 0 && (
                   <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, zIndex: 100, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', marginTop: 4 }}>
                     {autoCompleteList.map(keyword => (

@@ -201,7 +201,7 @@ export default function TrendsPage() {
           </div>
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
             {SEARCH_TRENDS[trendPeriod].map((item, i) => (
-              <button key={i} onClick={() => router.push(`/search?q=${item.keyword}`)}
+              <button key={i} onClick={() => router.push(`/search?q=${encodeURIComponent(item.keyword)}`)}
                 style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', border: 'none', borderBottom: !isMobile ? (i < 8 ? '1px solid var(--border)' : 'none') : (i < 9 ? '1px solid var(--border)' : 'none'), borderRight: !isMobile && i % 2 === 0 ? '1px solid var(--border)' : 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
                   <span style={{ fontSize: 14, fontWeight: 900, color: i < 3 ? '#FF2D55' : 'var(--text-muted)', minWidth: 22 }}>{item.rank}</span>

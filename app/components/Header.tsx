@@ -86,7 +86,8 @@ export default function Header({ isLoggedIn: isLoggedInProp = false, userType: u
 
         {/* Right */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-          <button onClick={() => setSearchOpen(!searchOpen)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 8, borderRadius: 8 }}>
+          <button onClick={() => setSearchOpen(!searchOpen)}
+            style={{ background: searchOpen ? 'rgba(255,45,85,0.1)' : 'none', border: 'none', color: searchOpen ? '#FF2D55' : 'var(--text-muted)', cursor: 'pointer', padding: 8, borderRadius: 8, display: 'flex', alignItems: 'center' }}>
             <Search size={18} />
           </button>
           {isLoggedIn ? (
@@ -118,19 +119,44 @@ export default function Header({ isLoggedIn: isLoggedInProp = false, userType: u
       {/* Search bar */}
       {searchOpen && (
         <div style={{ borderTop: '1px solid var(--border)', padding: '10px 16px', background: 'var(--bg)' }}>
-          <div style={{ maxWidth: 600, margin: '0 auto', position: 'relative' }}>
-            <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-            <input placeholder="인플루언서 이름, 채널명으로 검색..." style={{ paddingLeft: 36, fontSize: 14 }} autoFocus
-              onKeyDown={e => { if (e.key === 'Enter') { window.location.href = `/search?q=${(e.target as HTMLInputElement).value}`; setSearchOpen(false); } }} />
-          </div>
+          <form onSubmit={e => {
+              e.preventDefault();
+              const val = (e.currentTarget.elements.namedItem('hq') as HTMLInputElement).value;
+              if (!val.trim()) return;
+              window.location.href = `/search?q=${encodeURIComponent(val)}`;
+            }}
+            style={{ maxWidth: 600, margin: '0 auto', display: 'flex', gap: 8, position: 'relative' }}>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input name="hq" placeholder="인플루언서 이름, 채널명으로 검색..." style={{ width: '100%', paddingLeft: 36, fontSize: 14, boxSizing: 'border-box' }} autoFocus
+                enterKeyHint="search" />
+            </div>
+            <button type="submit" style={{ padding: '0 18px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              검색
+            </button>
+          </form>
         </div>
       )}
 
       {/* Mobile menu */}
       {mobileOpen && isMobile && (
-        <div style={{ borderTop: '1px solid var(--border)', background: 'var(--bg)', padding: '8px 16px 16px' }}>
+        <div style={{ borderTop: '1px solid var(--border)', background: 'var(--bg)', padding: '14px 16px 16px' }}>
+          {/* 검색창 */}
+          <form onSubmit={e => {
+              e.preventDefault();
+              const val = (e.currentTarget.elements.namedItem('mq') as HTMLInputElement).value;
+              if (!val.trim()) return;
+              window.location.href = `/search?q=${encodeURIComponent(val)}`;
+            }}
+            style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input name="mq" placeholder="인플루언서, 채널명 검색..." style={{ width: '100%', paddingLeft: 36, fontSize: 14, boxSizing: 'border-box' }} enterKeyHint="search" />
+            </div>
+            <button type="submit" style={{ padding: '0 16px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>검색</button>
+          </form>
           {/* 인플루언서 검색 */}
-          <p style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, padding: '10px 4px 4px', textTransform: 'uppercase', letterSpacing: 0.5 }}>인플루언서 검색</p>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, padding: '4px 4px', textTransform: 'uppercase', letterSpacing: 0.5 }}>인플루언서 검색</p>
           {[['유튜브', '/search?platform=유튜브', '📺'], ['인스타그램', '/search?platform=인스타그램', '📸'], ['틱톡', '/search?platform=틱톡', '🎵']].map(([label, href, icon]) => (
             <Link key={label} href={href} onClick={() => setMobileOpen(false)}
               style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 4px', color: 'var(--text)', textDecoration: 'none', fontSize: 15, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
