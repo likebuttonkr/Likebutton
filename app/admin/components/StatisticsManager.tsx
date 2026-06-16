@@ -6,17 +6,35 @@ export default function StatisticsManager() {
   const [stats, setStats] = useState<any>({});
   const [metric, setMetric] = useState('전체 회원 수');
   const [loading, setLoading] = useState(true);
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 1);
+    return d.toISOString().slice(0, 10);
+  });
+  const [endDate, setEndDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [period, setPeriod] = useState<'오늘'|'7일'|'30일'|'전체'|'직접입력'>('30일');
 
-  useEffect(() => { load(); }, []);
+  const applyPeriod = (p: typeof period) => {
+    setPeriod(p);
+    const now = new Date();
+    const end = now.toISOString().slice(0, 10);
+    if (p === '오늘') { setStartDate(end); setEndDate(end); }
+    else if (p === '7일') { const s = new Date(now); s.setDate(s.getDate() - 7); setStartDate(s.toISOString().slice(0,10)); setEndDate(end); }
+    else if (p === '30일') { const s = new Date(now); s.setMonth(s.getMonth() - 1); setStartDate(s.toISOString().slice(0,10)); setEndDate(end); }
+    else if (p === '전체') { setStartDate('2020-01-01'); setEndDate(end); }
+  };
 
   const load = async () => {
+    setLoading(true);
+    const from = new Date(startDate).toISOString();
+    const to = new Date(endDate + 'T23:59:59').toISOString();
+
     const [{ data: profiles }, { data: services }, { data: projects }, { data: qna }, { data: withdrawals }, { data: payments }] = await Promise.all([
-      supabase.from('profiles').select('user_type, approval_status, account_status, created_at'),
-      supabase.from('services').select('platform, status, created_at'),
-      supabase.from('projects').select('platform, status, budget, created_at'),
-      supabase.from('qna').select('status, created_at'),
-      supabase.from('withdrawals').select('amount, status, created_at'),
-      supabase.from('payments').select('amount, status, created_at'),
+      supabase.from('profiles').select('user_type, approval_status, account_status, created_at').gte('created_at', from).lte('created_at', to),
+      supabase.from('services').select('platform, status, created_at').gte('created_at', from).lte('created_at', to),
+      supabase.from('projects').select('platform, status, budget, created_at').gte('created_at', from).lte('created_at', to),
+      supabase.from('qna').select('status, created_at').gte('created_at', from).lte('created_at', to),
+      supabase.from('withdrawals').select('amount, status, created_at').gte('created_at', from).lte('created_at', to),
+      supabase.from('payments').select('amount, status, created_at').gte('created_at', from).lte('created_at', to),
     ]);
 
     const inf = (profiles || []).filter(p => p.user_type === 'influencer');
@@ -38,14 +56,16 @@ export default function StatisticsManager() {
       '전체 프로젝트 수': (projects || []).length,
       '프로젝트 진행 수': (projects || []).filter(p => !['광고 완료', '광고 취소'].includes(p.status)).length,
       '프로젝트 완료 수': (projects || []).filter(p => p.status === '광고 완료').length,
-      '미답변 Q&A 수': (qna || []).filter(q => q.status === '답변대기').length,
       'Q&A 수': (qna || []).length,
+      '미답변 Q&A 수': (qna || []).filter(q => q.status === '답변대기').length,
       '출금 신청 금액': (withdrawals || []).filter(w => w.status !== '출금 완료').reduce((s, w) => s + (w.amount || 0), 0),
       '출금 완료 금액': (withdrawals || []).filter(w => w.status === '출금 완료').reduce((s, w) => s + (w.amount || 0), 0),
       '전체 결제 금액': (payments || []).reduce((s, p) => s + (p.amount || 0), 0),
     });
     setLoading(false);
   };
+
+  useEffect(() => { load(); }, [startDate, endDate]);
 
   const METRICS = Object.keys(stats);
   const isMoney = metric.includes('금액');
@@ -59,59 +79,82 @@ export default function StatisticsManager() {
     { label: '출금 신청', value: stats['출금 신청 금액'], icon: '💰', color: '#FF6B35', isMoney: true },
   ];
 
-  if (loading) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>로딩 중...</div>;
-
   return (
     <div>
-      <h2 style={{ fontSize: 17, fontWeight: 800, marginBottom: 20 }}>통계</h2>
-
-      {/* 요약 카드 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 24 }}>
-        {SUMMARY_CARDS.map(card => (
-          <div key={card.label} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 20 }}>{card.icon}</span>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{card.label}</p>
-            </div>
-            <p style={{ fontSize: 20, fontWeight: 900, color: card.color }}>
-              {card.isMoney ? `${(card.value || 0).toLocaleString()}원` : (card.value || 0).toLocaleString()}
-            </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+        <h2 style={{ fontSize: 17, fontWeight: 800 }}>통계</h2>
+        {/* 기간 필터 */}
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+          {(['오늘', '7일', '30일', '전체'] as const).map(p => (
+            <button key={p} onClick={() => applyPeriod(p)}
+              style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${period === p ? '#FF2D55' : 'var(--border)'}`, background: period === p ? 'rgba(255,45,85,0.1)' : 'transparent', color: period === p ? '#FF2D55' : 'var(--text-muted)', fontSize: 12, fontWeight: period === p ? 700 : 400, cursor: 'pointer' }}>
+              {p}
+            </button>
+          ))}
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setPeriod('직접입력'); }}
+              style={{ padding: '5px 8px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 12, cursor: 'pointer' }} />
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>~</span>
+            <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setPeriod('직접입력'); }}
+              style={{ padding: '5px 8px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 12, cursor: 'pointer' }} />
+            <button onClick={load} style={{ padding: '5px 12px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
+              조회
+            </button>
           </div>
-        ))}
+        </div>
       </div>
 
-      {/* 상세 통계 */}
-      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 700 }}>상세 통계</h3>
-          <select value={metric} onChange={e => setMetric(e.target.value)}
-            style={{ padding: '6px 12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
-            {METRICS.map(m => <option key={m}>{m}</option>)}
-          </select>
-        </div>
-        <div style={{ textAlign: 'center', padding: '32px 20px' }}>
-          <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>{metric}</p>
-          <p style={{ fontSize: 48, fontWeight: 900, color: '#FF2D55' }}>
-            {isMoney ? `${(stats[metric] || 0).toLocaleString()}원` : (stats[metric] || 0).toLocaleString()}
-          </p>
-        </div>
-
-        {/* 전체 데이터 테이블 */}
-        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16 }}>
-          <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: 'var(--text-muted)' }}>전체 지표</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
-            {METRICS.map(m => (
-              <div key={m} onClick={() => setMetric(m)}
-                style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: m === metric ? 'rgba(255,45,85,0.08)' : 'var(--bg-card2)', border: `1px solid ${m === metric ? 'rgba(255,45,85,0.3)' : 'var(--border)'}`, borderRadius: 8, cursor: 'pointer' }}>
-                <span style={{ fontSize: 12, color: m === metric ? '#FF2D55' : 'var(--text-muted)' }}>{m}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: m === metric ? '#FF2D55' : 'var(--text)' }}>
-                  {m.includes('금액') ? `${(stats[m] || 0).toLocaleString()}원` : (stats[m] || 0).toLocaleString()}
-                </span>
+      {loading ? (
+        <div style={{ padding: 60, textAlign: 'center', color: 'var(--text-muted)' }}>로딩 중...</div>
+      ) : (
+        <>
+          {/* 요약 카드 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 24 }}>
+            {SUMMARY_CARDS.map(card => (
+              <div key={card.label} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <span style={{ fontSize: 20 }}>{card.icon}</span>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{card.label}</p>
+                </div>
+                <p style={{ fontSize: 20, fontWeight: 900, color: card.color }}>
+                  {card.isMoney ? `${(card.value || 0).toLocaleString()}원` : (card.value || 0).toLocaleString()}
+                </p>
               </div>
             ))}
           </div>
-        </div>
-      </div>
+
+          {/* 상세 통계 */}
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 700 }}>상세 통계</h3>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{startDate} ~ {endDate}</span>
+                <select value={metric} onChange={e => setMetric(e.target.value)}
+                  style={{ padding: '6px 12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+                  {METRICS.map(m => <option key={m}>{m}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={{ textAlign: 'center', padding: '32px 20px', background: 'var(--bg-card2)', borderRadius: 10, marginBottom: 16 }}>
+              <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>{metric}</p>
+              <p style={{ fontSize: 48, fontWeight: 900, color: '#FF2D55' }}>
+                {isMoney ? `${(stats[metric] || 0).toLocaleString()}원` : (stats[metric] || 0).toLocaleString()}
+              </p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
+              {METRICS.map(m => (
+                <div key={m} onClick={() => setMetric(m)}
+                  style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: m === metric ? 'rgba(255,45,85,0.08)' : 'var(--bg-card2)', border: `1px solid ${m === metric ? 'rgba(255,45,85,0.3)' : 'var(--border)'}`, borderRadius: 8, cursor: 'pointer' }}>
+                  <span style={{ fontSize: 12, color: m === metric ? '#FF2D55' : 'var(--text-muted)' }}>{m}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: m === metric ? '#FF2D55' : 'var(--text)' }}>
+                    {m.includes('금액') ? `${(stats[m] || 0).toLocaleString()}원` : (stats[m] || 0).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -421,17 +421,36 @@ function SettingsPanel({ activeSub }: { activeSub: string }) {
     <div>
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 20, marginBottom: 16 }}>
         <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>이메일 발송</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: 10, marginBottom: 12 }}>
-          <div><label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>발송 대상</label>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>발송 대상</label>
             <select value={emailTarget} onChange={e => setEmailTarget(e.target.value)}
               style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
               {['전체', '인플루언서', '광고주'].map(t => <option key={t}>{t}</option>)}
-            </select></div>
+            </select>
+          </div>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>특정 이메일 (선택)</label>
+            <input placeholder="특정 이메일 주소 입력" style={{ fontSize: 13, padding: '8px 12px', height: 'auto' }} />
+          </div>
         </div>
         <div style={{ marginBottom: 12 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>제목</label>
+          <input placeholder="이메일 제목" style={{ fontSize: 13, padding: '8px 12px', height: 'auto', marginBottom: 8 }} />
           <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>내용</label>
           <textarea value={emailContent} onChange={e => setEmailContent(e.target.value)} placeholder="이메일 내용을 입력하세요"
             style={{ width: '100%', minHeight: 120, padding: '10px 12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }} />
+        </div>
+        {/* 예약 발송 */}
+        <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13 }}>
+              <input type="checkbox" id="schedule-check" style={{ width: 14, height: 14 }}
+                onChange={e => { const dt = document.getElementById('schedule-dt') as HTMLInputElement; if (dt) dt.style.display = e.target.checked ? 'block' : 'none'; }} />
+              예약 발송
+            </label>
+            <input type="datetime-local" id="schedule-dt" style={{ display: 'none', fontSize: 12, padding: '5px 10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', cursor: 'pointer' }} />
+          </div>
         </div>
         <button onClick={sendEmail} style={{ padding: '9px 20px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>발송</button>
       </div>
