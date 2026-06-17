@@ -155,11 +155,14 @@ export default function MessagesPage() {
     }));
     // DB 저장
     if (currentUser) {
-      await supabase.from('messages').insert({
+      const { error } = await supabase.from('messages').insert({
         sender_id: currentUser.id,
         receiver_id: String(selectedChat.id),
         content: msgText,
       });
+      if (error) {
+        showToast('메시지 전송에 실패했습니다. 네트워크를 확인해주세요.', 'error');
+      }
     }
   };
 

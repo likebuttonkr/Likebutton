@@ -72,6 +72,7 @@ export default function RequestPage() {
   const [channel, setChannel] = useState<YoutubeChannel | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -127,35 +128,48 @@ export default function RequestPage() {
     : '';
 
   const handleSubmit = async () => {
+    if (submitting) return;
     if (!form.projectName || !form.releaseDate || form.adTypes.length === 0) {
       showToast('프로젝트명, 릴리즈 일정, 광고 형태는 필수 항목입니다.', 'error'); return;
     }
+    setSubmitting(true);
     try {
       const { supabase } = await import('../../lib/supabase');
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        // 프로젝트 생성
-        await supabase.from('projects').insert({
-          title: form.projectName,
-          advertiser_id: session.user.id,
-          influencer_id: id,
-          platform: 'youtube',
-          ad_type: form.adTypes.join(', '),
-          budget: totalEstimate,
-          status: '광고 요청',
-          target: form.target,
-          keyword: form.keyword,
-          product_info: form.productInfo,
-          release_date: form.releaseDate,
-        });
-        // 이메일 발송 이력 기록 (실제 발송은 Supabase Edge Function 또는 외부 이메일 서비스 연동 필요)
-        await supabase.from('email_history').insert({
-          target: id,
-          content: `[광고 요청] ${form.projectName} - ${form.adTypes.join(', ')} / 릴리즈: ${form.releaseDate} / 예상광고비: ${totalEstimate.toLocaleString()}원`,
-        });
+      if (!session) {
+        showToast('로그인이 필요합니다.', 'error');
+        setSubmitting(false);
+        return;
       }
-    } catch (e) {}
-    setSubmitted(true);
+      // 프로젝트 생성
+      const { error: insertError } = await supabase.from('projects').insert({
+        title: form.projectName,
+        advertiser_id: session.user.id,
+        influencer_id: id,
+        platform: 'youtube',
+        ad_type: form.adTypes.join(', '),
+        budget: totalEstimate,
+        status: '광고 요청',
+        target: form.target,
+        keyword: form.keyword,
+        product_info: form.productInfo,
+        release_date: form.releaseDate,
+      });
+      if (insertError) {
+        showToast('광고 요청 등록에 실패했습니다. 다시 시도해주세요.', 'error');
+        setSubmitting(false);
+        return;
+      }
+      // 이메일 발송 이력 기록 (실제 발송은 Supabase Edge Function 또는 외부 이메일 서비스 연동 필요)
+      await supabase.from('email_history').insert({
+        target: id,
+        content: `[광고 요청] ${form.projectName} - ${form.adTypes.join(', ')} / 릴리즈: ${form.releaseDate} / 예상광고비: ${totalEstimate.toLocaleString()}원`,
+      });
+      setSubmitted(true);
+    } catch (e) {
+      showToast('네트워크 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+      setSubmitting(false);
+    }
   };
 
   // 완료 화면
@@ -318,9 +332,9 @@ export default function RequestPage() {
               </div>
             </div>
 
-            <button onClick={handleSubmit}
-              style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
-              광고 요청하기
+            <button onClick={handleSubmit} disabled={submitting}
+              style={{ width: '100%', padding: '14px', background: submitting ? 'var(--border)' : 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 15, cursor: submitting ? 'not-allowed' : 'pointer' }}>
+              {submitting ? '요청 중...' : '광고 요청하기'}
             </button>
           </div>
 

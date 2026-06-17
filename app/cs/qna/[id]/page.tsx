@@ -24,7 +24,7 @@ export default function QnaDetailPage() {
     const load = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push('/login'); return; }
-      const { data } = await supabase.from('qna').select('*').eq('id', id).single();
+      const { data } = await supabase.from('qna').select('*').eq('id', id).eq('user_id', session.user.id).single();
       setQna(data);
       setLoading(false);
     };

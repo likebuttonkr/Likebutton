@@ -8,6 +8,7 @@ import { TIKTOK_MOCK_PROFILES } from '../lib/tiktok';
 import Link from 'next/link';
 import { Play, TrendingUp, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { showToast } from '../components/Toast';
 
 const SEARCH_TRENDS = {
   '일간': [
@@ -56,6 +57,8 @@ export default function TrendsPage() {
   const [videos, setVideos] = useState<YoutubeVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [sortBy, setSortBy] = useState('좋아요 많은순');
+  const [categoryFilter, setCategoryFilter] = useState({ main: '', mid: '', sub: '' });
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -76,9 +79,16 @@ export default function TrendsPage() {
   };
 
   const getRankVideos = () => {
-    if (platform === '인스타그램') return INSTAGRAM_MOCK_PROFILES.slice(0, 8).map((p, i) => ({ id: p.id, title: `${p.display_name} - 광고 게시물`, viewCount: p.followersFormatted + ' 팔로워', channelTitle: '@' + p.username, thumbnail: p.avatar_url, trend: i < 2 ? 'NEW' : i % 3 === 0 ? `▲${i * 10}` : `▼${i}` }));
-    if (platform === '틱톡') return TIKTOK_MOCK_PROFILES.slice(0, 8).map((p, i) => ({ id: p.id, title: `${p.display_name} - 틱톡 광고`, viewCount: p.followersFormatted + ' 팔로워', channelTitle: '@' + p.username, thumbnail: p.avatar_url, trend: i < 2 ? 'NEW' : i % 3 === 0 ? `▲${i * 15}` : `▼${i}` }));
-    return videos.map((v, i) => ({ ...v, trend: i < 2 ? 'NEW' : i % 3 === 0 ? `▲${i * 5}` : i % 3 === 1 ? `▼${i}` : '-' }));
+    let list: any[];
+    if (platform === '인스타그램') list = INSTAGRAM_MOCK_PROFILES.slice(0, 8).map((p, i) => ({ id: p.id, title: `${p.display_name} - 광고 게시물`, viewCount: p.followersFormatted + ' 팔로워', channelTitle: '@' + p.username, thumbnail: p.avatar_url, trend: i < 2 ? 'NEW' : i % 3 === 0 ? `▲${i * 10}` : `▼${i}`, _sortVal: p.followers_count || 0 }));
+    else if (platform === '틱톡') list = TIKTOK_MOCK_PROFILES.slice(0, 8).map((p, i) => ({ id: p.id, title: `${p.display_name} - 틱톡 광고`, viewCount: p.followersFormatted + ' 팔로워', channelTitle: '@' + p.username, thumbnail: p.avatar_url, trend: i < 2 ? 'NEW' : i % 3 === 0 ? `▲${i * 15}` : `▼${i}`, _sortVal: p.follower_count || 0 }));
+    else list = videos.map((v, i) => ({ ...v, trend: i < 2 ? 'NEW' : i % 3 === 0 ? `▲${i * 5}` : i % 3 === 1 ? `▼${i}` : '-', _sortVal: parseInt(v.viewCount) || 0 }));
+
+    const sorted = [...list];
+    if (sortBy === '최신순') sorted.reverse();
+    else if (sortBy === '구독자수 많은순' || sortBy === '조회수 많은순') sorted.sort((a, b) => (b._sortVal || 0) - (a._sortVal || 0));
+    // '좋아요 많은순'은 기본 정렬(가장 인기순으로 이미 정렬된 mock 데이터) 유지
+    return sorted;
   };
 
   return (
@@ -102,21 +112,25 @@ export default function TrendsPage() {
 
         {/* 카테고리 필터 + 정렬 */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
-          <select style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+          <select value={categoryFilter.main} onChange={e => { setCategoryFilter(f => ({ ...f, main: e.target.value })); showToast('카테고리 필터는 준비 중입니다.', 'info'); }}
+            style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
             <option value="">전체 카테고리</option>
             {['뷰티/패션', '음식/요리', '게임', '여행', '운동', 'IT/테크', '교육', '라이프스타일'].map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <select style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+          <select value={categoryFilter.mid} onChange={e => { setCategoryFilter(f => ({ ...f, mid: e.target.value })); showToast('카테고리 필터는 준비 중입니다.', 'info'); }}
+            style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
             <option value="">전체 중분류</option>
             {['뷰티', '패션', '스킨케어', '헤어', '먹방', '요리', 'PC게임', '모바일게임', '국내여행', '해외여행', '헬스', '요가'].map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <select style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+          <select value={categoryFilter.sub} onChange={e => { setCategoryFilter(f => ({ ...f, sub: e.target.value })); showToast('카테고리 필터는 준비 중입니다.', 'info'); }}
+            style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
             <option value="">전체 소분류</option>
             {['메이크업', '립스틱', '파운데이션', '아이섀도우', '맛집', '홈쿡', 'FPS', 'RPG', '유럽여행', '제주도', '다이어트', '필라테스'].map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
-            <select style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
-              {['좋아요 많은순', '조회수 많은순', '최신순', '구독자수 많은순'].map(s => <option key={s}>{s}</option>)}
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+              style={{ padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+              {['좋아요 많은순', '조회수 많은순', '최신순', '구독자수 많은순'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>

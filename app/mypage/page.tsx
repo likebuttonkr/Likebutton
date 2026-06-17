@@ -20,6 +20,8 @@ export default function MyPage() {
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', company: '', phone: '', channel_name: '' });
   const [notifSettings, setNotifSettings] = useState({ message: true, notice: true, ad_request: true, stage: true });
+  const [channelEmail, setChannelEmail] = useState(true);
+  const [channelSms, setChannelSms] = useState(false);
   const [emailAgree, setEmailAgree] = useState(false);
   const [smsAgree, setSmsAgree] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -43,6 +45,8 @@ export default function MyPage() {
   const [favorites, setFavorites] = useState<any[]>([]);
   const [favoritesPlatform, setFavoritesPlatform] = useState('유튜브');
   const [couponCode, setCouponCode] = useState('');
+  const [payments, setPayments] = useState<any[]>([]);
+  const [paymentFilter, setPaymentFilter] = useState('전체');
 
   // Q&A
   const [qnaList, setQnaList] = useState<any[]>([]);
@@ -67,7 +71,7 @@ export default function MyPage() {
           setAvatarUrl(data?.avatar_url || '');
           setLoading(false);
           if (data?.user_type === 'influencer') loadServices(session.user.id);
-          else { loadFavorites(session.user.id); loadQna(session.user.id); }
+          else { loadFavorites(session.user.id); loadQna(session.user.id); loadPayments(session.user.id); }
         });
     });
   }, []);
@@ -80,6 +84,11 @@ export default function MyPage() {
   const loadFavorites = async (uid: string) => {
     const { data } = await supabase.from('favorites').select('*').eq('advertiser_id', uid).order('created_at', { ascending: false });
     setFavorites(data || []);
+  };
+
+  const loadPayments = async (uid: string) => {
+    const { data } = await supabase.from('payments').select('*').eq('advertiser_id', uid).order('created_at', { ascending: false });
+    setPayments(data || []);
   };
 
   const loadQna = async (uid: string) => {
@@ -581,8 +590,9 @@ export default function MyPage() {
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: isMobile ? '18px' : '28px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 800 }}>결제 내역</h2>
-                <select style={{ padding: '7px 12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
-                  {['전체', '진행중', '완료', '취소'].map(s => <option key={s}>{s}</option>)}
+                <select value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)}
+                  style={{ padding: '7px 12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+                  {['전체', '진행중', '완료', '취소'].map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'auto' }}>
@@ -595,13 +605,32 @@ export default function MyPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td colSpan={8} style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                        <p style={{ fontSize: 36, marginBottom: 12 }}>🧾</p>
-                        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>결제 내역이 없어요</p>
-                        <p style={{ fontSize: 13 }}>광고 결제 후 내역이 여기에 표시돼요</p>
-                      </td>
-                    </tr>
+                    {(() => {
+                      const filteredPayments = payments.filter(p => paymentFilter === '전체' || p.status === paymentFilter);
+                      if (filteredPayments.length === 0) {
+                        return (
+                          <tr>
+                            <td colSpan={8} style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                              <p style={{ fontSize: 36, marginBottom: 12 }}>🧾</p>
+                              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>결제 내역이 없어요</p>
+                              <p style={{ fontSize: 13 }}>광고 결제 후 내역이 여기에 표시돼요</p>
+                            </td>
+                          </tr>
+                        );
+                      }
+                      return filteredPayments.map(p => (
+                        <tr key={p.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                          <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{p.order_no || p.id}</td>
+                          <td style={{ padding: '10px 12px' }}>{p.status || '완료'}</td>
+                          <td style={{ padding: '10px 12px' }}>{p.service_name || '-'}</td>
+                          <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{(p.ad_amount || 0).toLocaleString()}원</td>
+                          <td style={{ padding: '10px 12px' }}>{p.coupon_discount ? `-${p.coupon_discount.toLocaleString()}원` : '-'}</td>
+                          <td style={{ padding: '10px 12px', whiteSpace: 'nowrap', fontWeight: 700 }}>{(p.amount || 0).toLocaleString()}원</td>
+                          <td style={{ padding: '10px 12px' }}>{p.tax_invoice_url ? <a href={p.tax_invoice_url} target="_blank" rel="noreferrer" style={{ color: '#5B8DEF' }}>발행됨</a> : '미발행'}</td>
+                          <td style={{ padding: '10px 12px', whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>{new Date(p.created_at).toLocaleString('ko-KR')}</td>
+                        </tr>
+                      ));
+                    })()}
                   </tbody>
                 </table>
               </div>
@@ -796,11 +825,11 @@ export default function MyPage() {
                     {notifSettings[item.key as keyof typeof notifSettings] && (
                       <div style={{ display: 'flex', gap: 16, paddingLeft: 4 }}>
                         <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)' }}>
-                          <input type="checkbox" defaultChecked style={{ width: 13, height: 13 }} />
+                          <input type="checkbox" checked={channelEmail} onChange={e => setChannelEmail(e.target.checked)} style={{ width: 13, height: 13 }} />
                           이메일
                         </label>
                         <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)' }}>
-                          <input type="checkbox" style={{ width: 13, height: 13 }} />
+                          <input type="checkbox" checked={channelSms} onChange={e => setChannelSms(e.target.checked)} style={{ width: 13, height: 13 }} />
                           SMS
                         </label>
                       </div>

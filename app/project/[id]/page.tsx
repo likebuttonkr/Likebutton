@@ -25,6 +25,7 @@ export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showRequestInfo, setShowRequestInfo] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -40,6 +41,7 @@ export default function ProjectDetail() {
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export default function ProjectDetail() {
   useEffect(() => {
     const load = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) { setLoading(false); setAccessDenied(true); return; }
 
       // 유저 프로필
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
@@ -60,6 +62,12 @@ export default function ProjectDetail() {
       // 프로젝트 로드
       const { data: proj } = await supabase.from('projects').select('*').eq('id', id).single();
       if (proj) {
+        const isOwner = proj.advertiser_id === session.user.id || proj.influencer_id === session.user.id;
+        if (!isOwner) {
+          setAccessDenied(true);
+          setLoading(false);
+          return;
+        }
         setProject(proj);
         setCurrentStep(STATUS_TO_STEP[proj.status] ?? 0);
         setPlanConfirmed(['영상 피드백', '광고 진행', '광고 완료'].includes(proj.status));
@@ -104,8 +112,14 @@ export default function ProjectDetail() {
   };
 
   const submitReview = async () => {
-    if (!reviewText.trim()) return;
-    await supabase.from('projects').update({ review_rating: rating, review_text: reviewText }).eq('id', id);
+    if (!reviewText.trim() || reviewSubmitting) return;
+    setReviewSubmitting(true);
+    const { error } = await supabase.from('projects').update({ review_rating: rating, review_text: reviewText }).eq('id', id);
+    if (error) {
+      showToast('리뷰 등록에 실패했습니다. 다시 시도해주세요.', 'error');
+      setReviewSubmitting(false);
+      return;
+    }
     setReviewSubmitted(true);
     showToast('리뷰가 등록되었습니다.', 'success');
   };
@@ -114,6 +128,16 @@ export default function ProjectDetail() {
     <div><Header />
       <div style={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: 'var(--text-muted)' }}>로딩 중...</p>
+      </div>
+    </div>
+  );
+
+  if (accessDenied) return (
+    <div><Header />
+      <div style={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
+        <p style={{ fontSize: 36 }}>🔒</p>
+        <p style={{ color: 'var(--text-muted)' }}>이 프로젝트에 접근할 권한이 없어요</p>
+        <Link href="/mypage" style={{ padding: '10px 20px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 8, fontWeight: 700 }}>마이페이지로</Link>
       </div>
     </div>
   );
@@ -386,9 +410,9 @@ export default function ProjectDetail() {
                     </div>
                     <textarea value={reviewText} onChange={e => setReviewText(e.target.value)} placeholder="광고 진행 후기를 남겨주세요..."
                       style={{ width: '100%', minHeight: 100, padding: '12px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', marginBottom: 12 }} />
-                    <button onClick={submitReview} disabled={!reviewText.trim()}
-                      style={{ padding: '10px 24px', background: reviewText.trim() ? 'linear-gradient(135deg,#FF2D55,#FF6B35)' : 'var(--border)', color: 'white', border: 'none', borderRadius: 8, cursor: reviewText.trim() ? 'pointer' : 'not-allowed', fontSize: 14, fontWeight: 700 }}>
-                      리뷰 등록
+                    <button onClick={submitReview} disabled={!reviewText.trim() || reviewSubmitting}
+                      style={{ padding: '10px 24px', background: reviewText.trim() && !reviewSubmitting ? 'linear-gradient(135deg,#FF2D55,#FF6B35)' : 'var(--border)', color: 'white', border: 'none', borderRadius: 8, cursor: reviewText.trim() && !reviewSubmitting ? 'pointer' : 'not-allowed', fontSize: 14, fontWeight: 700 }}>
+                      {reviewSubmitting ? '등록 중...' : '리뷰 등록'}
                     </button>
                   </div>
                 )}

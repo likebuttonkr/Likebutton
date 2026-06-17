@@ -12,8 +12,7 @@ import PaymentManager from './components/PaymentManager';
 import WithdrawalManager from './components/WithdrawalManager';
 import StatisticsManager from './components/StatisticsManager';
 
-const ADMIN_EMAIL = 'admin@likebutton.kr';
-const ADMIN_PASSWORD = 'likebutton2024!';
+
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: '대시보드', icon: BarChart2 },
@@ -55,9 +54,18 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    const auth = sessionStorage.getItem('admin_auth');
-    if (auth === 'true') { setIsLoggedIn(true); loadData(); }
-    setLoading(false);
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
+        if (profile?.is_admin) {
+          setIsLoggedIn(true);
+          loadData();
+        }
+      }
+      setLoading(false);
+    };
+    checkAuth();
   }, []);
 
   const loadData = async (period: string = dashPeriod) => {
@@ -83,15 +91,24 @@ export default function AdminPage() {
     }
   };
 
-  const handleLogin = () => {
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      sessionStorage.setItem('admin_auth', 'true');
-      setIsLoggedIn(true); setError('');
-      loadData();
-    } else { setError('아이디 또는 비밀번호가 올바르지 않습니다.'); }
+  const handleLogin = async () => {
+    setError('');
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError || !data.user) {
+      setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+      return;
+    }
+    const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', data.user.id).single();
+    if (!profile?.is_admin) {
+      await supabase.auth.signOut();
+      setError('관리자 권한이 없는 계정입니다.');
+      return;
+    }
+    setIsLoggedIn(true);
+    loadData();
   };
 
-  const handleLogout = () => { sessionStorage.removeItem('admin_auth'); setIsLoggedIn(false); };
+  const handleLogout = async () => { await supabase.auth.signOut(); setIsLoggedIn(false); };
   const toggleNav = (id: string) => setExpandedNav(e => e.includes(id) ? e.filter(x => x !== id) : [...e, id]);
 
   const filteredUsers = users.filter(u => {
