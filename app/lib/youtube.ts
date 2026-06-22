@@ -47,11 +47,17 @@ function estimatePrice(subscribers: string): string {
 }
 
 export async function searchChannels(query: string, maxResults = 12): Promise<YoutubeChannel[]> {
+  if (!API_KEY) {
+    throw new Error('YOUTUBE_API_KEY_MISSING');
+  }
   try {
     const searchRes = await fetch(
       `${BASE}/search?part=snippet&type=channel&q=${encodeURIComponent(query)}&maxResults=${maxResults}&key=${API_KEY}`
     );
     const searchData = await searchRes.json();
+    if (searchData.error) {
+      throw new Error(`YOUTUBE_API_ERROR: ${searchData.error.message || searchData.error.status}`);
+    }
     if (!searchData.items?.length) return [];
 
     const channelIds = searchData.items.map((i: any) => i.snippet.channelId).join(',');
@@ -59,6 +65,9 @@ export async function searchChannels(query: string, maxResults = 12): Promise<Yo
       `${BASE}/channels?part=snippet,statistics,brandingSettings&id=${channelIds}&key=${API_KEY}`
     );
     const statsData = await statsRes.json();
+    if (statsData.error) {
+      throw new Error(`YOUTUBE_API_ERROR: ${statsData.error.message || statsData.error.status}`);
+    }
 
     return (statsData.items || []).map((ch: any) => ({
       id: ch.id,
@@ -76,8 +85,10 @@ export async function searchChannels(query: string, maxResults = 12): Promise<Yo
       reviewCount: Math.floor(Math.random() * 80 + 5),
     }));
   } catch (e) {
-    console.error(e);
-    return [];
+    if (e instanceof Error && (e.message.startsWith('YOUTUBE_API_ERROR') || e.message === 'YOUTUBE_API_KEY_MISSING')) {
+      throw e;
+    }
+    throw new Error('YOUTUBE_API_NETWORK_ERROR');
   }
 }
 

@@ -51,6 +51,7 @@ function SearchContent() {
   const [igProfiles, setIgProfiles] = useState<InstagramProfile[]>(INSTAGRAM_MOCK_PROFILES);
   const [ttProfiles, setTtProfiles] = useState<TikTokProfile[]>(TIKTOK_MOCK_PROFILES);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [autoCompleteList, setAutoCompleteList] = useState<string[]>([]);
   const [isAdvertiser, setIsAdvertiser] = useState(false);
@@ -158,7 +159,16 @@ function SearchContent() {
     const searchTerm = query || selectedCategory || (topTab === 'Top 100' ? '유튜브 인기' : topTab === '급상승 인플루언서' ? '급상승 유튜브' : '한국 유튜브');
     if (!searchTerm) return;
     setLoading(true);
-    searchChannels(searchTerm, 12).then(data => { setChannels(data); setLoading(false); });
+    setSearchError(null);
+    searchChannels(searchTerm, 12)
+      .then(data => { setChannels(data); setLoading(false); })
+      .catch((e: Error) => {
+        setChannels([]);
+        setLoading(false);
+        if (e.message === 'YOUTUBE_API_KEY_MISSING') setSearchError('YouTube API 설정에 문제가 있어요. 잠시 후 다시 시도해주세요.');
+        else if (e.message.startsWith('YOUTUBE_API_ERROR')) setSearchError('인플루언서 정보를 불러오는 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
+        else setSearchError('네트워크 연결을 확인하고 다시 시도해주세요.');
+      });
   }, [query, selectedCategory, topTab]);
 
   return (
@@ -480,9 +490,11 @@ function SearchContent() {
               </div>
             ) : channels.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
-                <p style={{ fontSize: 48, marginBottom: 16 }}>🔍</p>
-                <p style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>검색 결과가 없어요</p>
-                <p style={{ fontSize: 14 }}>다른 검색어나 카테고리를 시도해보세요</p>
+                <p style={{ fontSize: 48, marginBottom: 16 }}>{searchError ? '⚠️' : '🔍'}</p>
+                <p style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>
+                  {searchError || '검색 결과가 없어요'}
+                </p>
+                <p style={{ fontSize: 14 }}>{searchError ? '문제가 계속되면 잠시 후 다시 시도해주세요' : '다른 검색어나 카테고리를 시도해보세요'}</p>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(220px, 1fr))', gap: isMobile ? 10 : 14 }}>
