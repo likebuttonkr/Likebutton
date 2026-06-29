@@ -116,9 +116,16 @@ function SignupContent() {
     setLoading(true);
     setError('');
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({ email: form.email, password: form.password });
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/mypage`,
+        }
+      });
       if (signUpError) { setError(signUpError.message); setLoading(false); return; }
       if (data.user) {
+        // profiles 테이블에 바로 insert (이메일 인증 전에도 프로필 데이터는 저장)
         await supabase.from('profiles').insert({
           id: data.user.id,
           email: form.email,
@@ -128,7 +135,7 @@ function SignupContent() {
           phone: form.phone || null,
           channel_name: userType === 'influencer' ? (channelForm.youtube || channelForm.instagram || channelForm.tiktok) : null,
         });
-        setStep(userType === 'influencer' ? 5 : 5);
+        setStep(5);
       }
     } catch (e: any) { setError(e.message); }
     setLoading(false);

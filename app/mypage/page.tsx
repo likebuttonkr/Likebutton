@@ -20,6 +20,7 @@ export default function MyPage() {
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', company: '', phone: '', channel_name: '' });
   const [notifSettings, setNotifSettings] = useState({ message: true, notice: true, ad_request: true, stage: true });
+  const [showTypeModal, setShowTypeModal] = useState(false);
   const [channelEmail, setChannelEmail] = useState(true);
   const [channelSms, setChannelSms] = useState(false);
   const [emailAgree, setEmailAgree] = useState(false);
@@ -70,8 +71,13 @@ export default function MyPage() {
           setEditForm({ name: data?.name || '', company: data?.company || '', phone: data?.phone || '', channel_name: data?.channel_name || '' });
           setAvatarUrl(data?.avatar_url || '');
           setLoading(false);
-          if (data?.user_type === 'influencer') loadServices(session.user.id);
-          else { loadFavorites(session.user.id); loadQna(session.user.id); loadPayments(session.user.id); }
+          if (!data?.user_type) {
+            setShowTypeModal(true);
+          } else if (data?.user_type === 'influencer') {
+            loadServices(session.user.id);
+          } else {
+            loadFavorites(session.user.id); loadQna(session.user.id); loadPayments(session.user.id);
+          }
         });
     });
   }, []);
@@ -842,6 +848,36 @@ export default function MyPage() {
         </main>
       </div>
       <Footer />
+      {/* 소셜 로그인 후 유저 타입 선택 모달 */}
+      {showTypeModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: '36px 28px', width: '100%', maxWidth: 420, textAlign: 'center' }}>
+            <p style={{ fontSize: 32, marginBottom: 12 }}>👋</p>
+            <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>어떤 분이세요?</h2>
+            <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 28, lineHeight: 1.6 }}>서비스 이용 목적에 맞게 선택해주세요</p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              {[
+                { type: 'influencer', icon: '🎬', label: '인플루언서', desc: '광고를 수주하고\n수익을 창출해요' },
+                { type: 'advertiser', icon: '🏢', label: '광고주', desc: '인플루언서를 찾고\n광고를 집행해요' },
+              ].map(({ type, icon, label, desc }) => (
+                <button key={type}
+                  onClick={async () => {
+                    await supabase.from('profiles').update({ user_type: type }).eq('id', user.id);
+                    setProfile((p: any) => ({ ...p, user_type: type }));
+                    setShowTypeModal(false);
+                    if (type === 'influencer') loadServices(user.id);
+                    else { loadFavorites(user.id); loadQna(user.id); loadPayments(user.id); }
+                  }}
+                  style={{ flex: 1, padding: '20px 12px', background: 'var(--bg-card2)', border: '2px solid var(--border)', borderRadius: 14, cursor: 'pointer', transition: 'all 0.2s' }}>
+                  <p style={{ fontSize: 32, marginBottom: 10 }}>{icon}</p>
+                  <p style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', marginBottom: 6 }}>{label}</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <ConfirmModal
         isOpen={confirmModal.open}
         title={confirmModal.title}

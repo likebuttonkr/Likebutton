@@ -147,6 +147,88 @@ function SearchContent() {
 
   const totalFilters = subFilters.length + ageFilters.length + genderFilters.length + viewFilters.length + budgetFilters.length + selectedCategories.length + (budgetMin || budgetMax ? 1 : 0);
 
+  // 구독자 수 / 조회수 파싱 (예: "86만" → 860000, "1.2만" → 12000)
+  const parseKoreanNumber = (str: string): number => {
+    if (!str) return 0;
+    const num = parseFloat(str.replace(/[^0-9.]/g, ''));
+    if (str.includes('억')) return num * 100000000;
+    if (str.includes('만')) return num * 10000;
+    if (str.includes('천')) return num * 1000;
+    return num;
+  };
+
+  const parsePriceFilter = (priceStr: string): [number, number] => {
+    if (priceStr === '100만원 미만') return [0, 1000000];
+    if (priceStr === '100만원~300만원') return [1000000, 3000000];
+    if (priceStr === '300만원~500만원') return [3000000, 5000000];
+    if (priceStr === '500만원~1,000만원') return [5000000, 10000000];
+    if (priceStr === '1,000만원~1,500만원') return [10000000, 15000000];
+    if (priceStr === '1,500만원 이상') return [15000000, Infinity];
+    return [0, Infinity];
+  };
+
+  const parseSubFilter = (filterStr: string): [number, number] => {
+    if (filterStr === '1천 미만') return [0, 1000];
+    if (filterStr === '1천~1만') return [1000, 10000];
+    if (filterStr === '1만~5만') return [10000, 50000];
+    if (filterStr === '5만~10만') return [50000, 100000];
+    if (filterStr === '10만~30만') return [100000, 300000];
+    if (filterStr === '30만~50만') return [300000, 500000];
+    if (filterStr === '50만~100만') return [500000, 1000000];
+    if (filterStr === '100만 이상') return [1000000, Infinity];
+    return [0, Infinity];
+  };
+
+  // 실제 필터 적용된 채널 목록
+  const displayChannels = channels.filter(ch => {
+    const subCount = parseKoreanNumber(ch.subscriberCount);
+    const viewCountNum = parseKoreanNumber(ch.viewCount);
+    const priceNum = parseKoreanNumber(ch.estimatedPrice || '0');
+
+    // 구독자 수 필터
+    if (subFilters.length > 0) {
+      const inRange = subFilters.some(f => {
+        const [min, max] = parseSubFilter(f);
+        return subCount >= min && subCount < max;
+      });
+      if (!inRange) return false;
+    }
+
+    // 예상 조회수 필터
+    if (viewFilters.length > 0) {
+      const inRange = viewFilters.some(f => {
+        const [min, max] = parseSubFilter(f);
+        return viewCountNum >= min && viewCountNum < max;
+      });
+      if (!inRange) return false;
+    }
+
+    // 광고비 예산 필터
+    if (budgetFilters.length > 0) {
+      const inRange = budgetFilters.some(f => {
+        const [min, max] = parsePriceFilter(f);
+        return priceNum >= min && priceNum < max;
+      });
+      if (!inRange) return false;
+    }
+
+    // 직접 입력 예산 필터
+    if (budgetMin && priceNum < Number(budgetMin)) return false;
+    if (budgetMax && priceNum > Number(budgetMax)) return false;
+
+    // 연령/성별은 YouTube API에서 시청자층 데이터를 실시간으로 안 줘서 클라이언트 필터 불가
+    // (인플루언서 상세 페이지에서 시청자층 분석 탭으로 확인 유도)
+
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === '구독자수 많은순') return parseKoreanNumber(b.subscriberCount) - parseKoreanNumber(a.subscriberCount);
+    if (sortBy === '조회수 많은순') return parseKoreanNumber(b.viewCount) - parseKoreanNumber(a.viewCount);
+    if (sortBy === '광고비 낮은순') return parseKoreanNumber(a.estimatedPrice || '0') - parseKoreanNumber(b.estimatedPrice || '0');
+    if (sortBy === '광고비 높은순') return parseKoreanNumber(b.estimatedPrice || '0') - parseKoreanNumber(a.estimatedPrice || '0');
+    if (sortBy === '평점 높은순') return parseFloat(String(b.rating || '0')) - parseFloat(String(a.rating || '0'));
+    return 0; // 기본 정렬(API 반환 순)
+  });
+
   const toggle = (arr: string[], setArr: (v: string[]) => void, val: string) => {
     setArr(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val]);
   };
@@ -464,7 +546,7 @@ function SearchContent() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 8, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
               <p style={{ fontSize: isMobile ? 13 : 14, color: 'var(--text-muted)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {selectedCategory ? <><strong style={{ color: 'var(--text)' }}>{selectedCategory}</strong> 카테고리 </> : query ? <><strong style={{ color: 'var(--text)' }}>"{query}"</strong> 검색 결과 </> : <strong style={{ color: 'var(--text)' }}>{topTab} </strong>}
-                <strong style={{ color: '#FF2D55' }}>{channels.length}건</strong>
+                <strong style={{ color: '#FF2D55' }}>{displayChannels.length}건</strong>
               </p>
               <div style={{ position: 'relative', flexShrink: 0 }}>
                 <button onClick={() => setSortOpen(!sortOpen)} style={{ padding: isMobile ? '7px 10px' : '8px 14px', background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text)', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: isMobile ? 12 : 13, whiteSpace: 'nowrap' }}>
@@ -498,7 +580,7 @@ function SearchContent() {
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(220px, 1fr))', gap: isMobile ? 10 : 14 }}>
-                {channels.map((ch, idx) => (
+                {displayChannels.map((ch, idx) => (
                   <Link key={ch.id} href={`/influencer/${ch.id}`} style={{ textDecoration: 'none' }}>
                     <div className="card" style={{ padding: 18, height: '100%', display: 'flex', flexDirection: 'column' }}>
                       {(topTab === 'Top 100' || topTab === '급상승 인플루언서') && (
