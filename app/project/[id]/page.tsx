@@ -43,6 +43,8 @@ export default function ProjectDetail() {
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [isAdvertiser, setIsAdvertiser] = useState(false);
+
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -69,6 +71,7 @@ export default function ProjectDetail() {
           return;
         }
         setProject(proj);
+        setIsAdvertiser(proj.advertiser_id === session.user.id);
         setCurrentStep(STATUS_TO_STEP[proj.status] ?? 0);
         setPlanConfirmed(['영상 피드백', '광고 진행', '광고 완료'].includes(proj.status));
         setVideoConfirmed(['광고 진행', '광고 완료'].includes(proj.status));

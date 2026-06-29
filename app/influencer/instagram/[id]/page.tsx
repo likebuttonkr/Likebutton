@@ -107,7 +107,7 @@ export default function InstagramDetailPage() {
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 8 }}>
             {MOCK_POSTS.map(post => (
               <div key={post.id} style={{ position: 'relative', aspectRatio: '1', borderRadius: 10, overflow: 'hidden' }}>
-                <img src={post.img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={post.img} alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent,rgba(0,0,0,0.6))', padding: '12px 10px 8px', display: 'flex', gap: 10 }}>
                   <span style={{ color: 'white', fontSize: 12, fontWeight: 600 }}>❤️ {post.likes}</span>
                   <span style={{ color: 'white', fontSize: 12, fontWeight: 600 }}>💬 {post.comments}</span>
