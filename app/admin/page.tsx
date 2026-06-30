@@ -479,6 +479,9 @@ function SettingsPanel({ activeSub }: { activeSub: string }) {
     <div>
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 20, marginBottom: 16 }}>
         <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>이메일 발송</h3>
+        <div style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 12, color: '#FFB800' }}>
+          ⚠️ 현재는 발송 이력만 기록됩니다. 실제 이메일 전송은 Resend/SendGrid 등 외부 이메일 서비스 연동이 필요해요.
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 12 }}>
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>발송 대상</label>

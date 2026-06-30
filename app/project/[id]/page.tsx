@@ -6,6 +6,7 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { supabase } from '../../lib/supabase';
 import { showToast } from '../../components/Toast';
+import ConfirmModal from '../../components/ConfirmModal';
 import { ArrowLeft, CheckCircle, Clock, MessageSquare, FileText, Star, ChevronDown, ChevronUp, ExternalLink, Check } from 'lucide-react';
 
 const STEPS = [
@@ -44,6 +45,7 @@ export default function ProjectDetail() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isAdvertiser, setIsAdvertiser] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
 
 
   useEffect(() => {
@@ -366,7 +368,7 @@ export default function ProjectDetail() {
             )}
 
             {/* 광고 완료 - 리뷰 */}
-            {currentStep >= 4 && (
+            {currentStep >= 4 && isAdvertiser && (
               <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px 24px', marginBottom: 20 }}>
                 <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 16 }}>✅ 광고 완료 - 리뷰 등록</h2>
                 {reviewSubmitted || project.review_rating ? (
@@ -428,13 +430,8 @@ export default function ProjectDetail() {
             <Link href="/messages" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', background: 'linear-gradient(135deg,#FF2D55,#FF6B35)', borderRadius: 10, color: 'white', textDecoration: 'none', fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
               <MessageSquare size={16} /> 대화하기
             </Link>
-            {(project.status === '광고 요청' || project.status === '입금 대기') && (
-              <button onClick={async () => {
-                if (!window.confirm('광고 요청을 취소하시겠어요?\n취소 후 복구가 불가능합니다.')) return;
-                await supabase.from('projects').update({ status: '광고 요청 취소' }).eq('id', id);
-                showToast('광고 요청이 취소되었습니다.', 'info');
-                setTimeout(() => window.location.href = '/mypage', 1500);
-              }}
+            {isAdvertiser && (project.status === '광고 요청' || project.status === '입금 대기') && (
+              <button onClick={() => setCancelModal(true)}
                 style={{ width: '100%', padding: '10px', background: 'transparent', border: '1px solid rgba(255,45,85,0.3)', borderRadius: 10, color: '#FF2D55', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginBottom: 12 }}>
                 광고 요청 취소
               </button>
@@ -497,6 +494,20 @@ export default function ProjectDetail() {
         </div>
       </div>
       <Footer />
+      <ConfirmModal
+        isOpen={cancelModal}
+        title="광고 요청 취소"
+        message={"광고 요청을 취소하시겠어요?\n취소 후 복구가 불가능합니다."}
+        confirmText="취소하기"
+        confirmColor="#FF2D55"
+        onConfirm={async () => {
+          await supabase.from('projects').update({ status: '광고 요청 취소' }).eq('id', id);
+          setCancelModal(false);
+          showToast('광고 요청이 취소되었습니다.', 'info');
+          setTimeout(() => window.location.href = '/mypage', 1500);
+        }}
+        onCancel={() => setCancelModal(false)}
+      />
     </div>
   );
 }

@@ -33,6 +33,7 @@ export default function InfluencerDetail() {
   const [videos, setVideos] = useState<YoutubeVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
+  const [isAdvertiser, setIsAdvertiser] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
   const [tab, setTab] = useState<'videos' | 'audience' | 'service_desc' | 'pricing' | 'process' | 'reviews'>('videos');
   const [audiencePeriod, setAudiencePeriod] = useState<'1주일' | '1개월' | '3개월' | '1년'>('1개월');
@@ -55,6 +56,8 @@ export default function InfluencerDetail() {
     // 찜 여부 확인
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return;
+      supabase.from('profiles').select('user_type').eq('id', session.user.id).single()
+        .then(({ data }) => { if (data?.user_type === 'advertiser') setIsAdvertiser(true); });
       supabase.from('favorites').select('id').eq('advertiser_id', session.user.id).eq('influencer_channel_id', id).single()
         .then(({ data }) => { if (data) setLiked(true); });
     });
@@ -536,9 +539,15 @@ export default function InfluencerDetail() {
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 6 }}>최소 광고 비용</p>
               <p style={{ fontSize: 28, fontWeight: 900, color: '#FF2D55', marginBottom: 4 }}>{channel.estimatedPrice}</p>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>실제 비용은 광고 형태에 따라 달라집니다</p>
-              <Link href={`/request/${id}`} style={{ display: 'block', width: '100%', padding: '14px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 10, fontWeight: 700, fontSize: 15, textAlign: 'center', marginBottom: 10 }}>
-                광고 요청하기
-              </Link>
+              {isAdvertiser ? (
+                <Link href={`/request/${id}`} style={{ display: 'block', width: '100%', padding: '14px', background: 'linear-gradient(135deg, #FF2D55, #FF6B35)', color: 'white', textDecoration: 'none', borderRadius: 10, fontWeight: 700, fontSize: 15, textAlign: 'center', marginBottom: 10 }}>
+                  광고 요청하기
+                </Link>
+              ) : (
+                <Link href="/login" style={{ display: 'block', width: '100%', padding: '14px', background: 'var(--bg-card2)', color: 'var(--text-muted)', textDecoration: 'none', borderRadius: 10, fontWeight: 600, fontSize: 15, textAlign: 'center', marginBottom: 10, border: '1px solid var(--border)' }}>
+                  로그인 후 광고 요청
+                </Link>
+              )}
               <Link href="/messages" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%', padding: '12px', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 10, fontWeight: 600, fontSize: 14, textDecoration: 'none', boxSizing: 'border-box' }}>
                 <MessageSquare size={15} /> 메시지 보내기
               </Link>

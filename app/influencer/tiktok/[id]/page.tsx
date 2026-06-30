@@ -27,6 +27,7 @@ export default function TikTokDetailPage() {
   const [profile, setProfile] = useState<any>(null);
   const [tab, setTab] = useState<'videos'|'audience'|'service_desc'|'pricing'|'process'|'reviews'>('videos');
   const [liked, setLiked] = useState(false);
+  const [isAdvertiser, setIsAdvertiser] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -91,9 +92,15 @@ export default function TikTokDetailPage() {
               <Link href="/messages" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 16px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 10, color: 'var(--text)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
                 <MessageSquare size={14} /> 메시지
               </Link>
-              <Link href={`/request/${id}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 16px', background: 'linear-gradient(135deg,#FF2D55,#000)', color: 'white', textDecoration: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700 }}>
-                광고 요청하기
-              </Link>
+              {isAdvertiser ? (
+                <Link href={`/request/${id}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 16px', background: 'linear-gradient(135deg,#FF2D55,#000)', color: 'white', textDecoration: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700 }}>
+                  광고 요청하기
+                </Link>
+              ) : (
+                <Link href="/login" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 16px', background: 'var(--bg-card2)', color: 'var(--text-muted)', textDecoration: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, border: '1px solid var(--border)' }}>
+                  로그인 후 광고 요청
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -192,9 +199,15 @@ export default function TikTokDetailPage() {
                   <span style={{ fontSize: 12, background: 'rgba(255,45,85,0.08)', color: '#FF2D55', padding: '4px 12px', borderRadius: 20 }}>작업 {s.days}</span>
                 </div>
                 <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 14 }}>{s.desc}</p>
-                <Link href={`/request/${id}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '11px', background: 'linear-gradient(135deg,#FF2D55,#000)', color: 'white', textDecoration: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700 }}>
-                  {s.type} 광고 요청하기
-                </Link>
+                {isAdvertiser ? (
+                  <Link href={`/request/${id}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '11px', background: 'linear-gradient(135deg,#FF2D55,#000)', color: 'white', textDecoration: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700 }}>
+                    {s.type} 광고 요청하기
+                  </Link>
+                ) : (
+                  <Link href="/login" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '11px', background: 'var(--bg-card2)', color: 'var(--text-muted)', textDecoration: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, border: '1px solid var(--border)' }}>
+                    로그인 후 요청
+                  </Link>
+                )}
               </div>
             ))}
           </div>
